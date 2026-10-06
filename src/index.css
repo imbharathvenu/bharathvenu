@@ -1,0 +1,86 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --color-deep-bg: #081F26;
+    --color-primary-teal: #063F4B;
+    --color-secondary-teal: #0B5260;
+    --color-deep-navy: #102932;
+    --color-industrial-blue: #236477;
+    --color-light-accent: #7DAFB9;
+    --color-safety-orange: #E8892B;
+    --color-warm-white: #F4F2EB;
+    --color-clean-white: #FFFFFF;
+    --color-muted-grey: #ADB8BD;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--color-deep-bg);
+    color: var(--color-warm-white);
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6, .font-heading {
+    font-family: 'Sora', 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+    letter-spacing: -0.02em;
+  }
+}
+
+/* Subtle Industrial Grid & Motion */
+.warehouse-grid {
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, rgba(125, 175, 185, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(125, 175, 185, 0.05) 1px, transparent 1px);
+}
+
+.warehouse-grid-subtle {
+  background-size: 60px 60px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.8; }
+}
+
+@keyframes cargo-travel {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(100%); }
+}
+
+.animate-cargo-node {
+  animation: cargo-travel 6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 7px;
+}
+::-webkit-scrollbar-track {
+  background: #081F26;
+}
+::-webkit-scrollbar-thumb {
+  background: #236477;
+  border-radius: 0px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #E8892B;
+}
+
+/* Print styling for resume */
+@media print {
+  body {
+    background: #FFFFFF !important;
+    color: #102932 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+}

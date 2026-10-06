@@ -1,0 +1,437 @@
+import { CapabilityArea, EducationItem, ExperienceItem, FlowStep, GalleryItem, LeadershipItem } from '../types';
+
+const B: string = (import.meta as any).env?.BASE_URL ?? '/';
+
+export const PERSONAL_INFO = {
+  name: 'BHARATH VENU',
+  title: 'Warehouse Supervisor | Logistics & Supply Chain Operations',
+  tagline: 'Warehouse operations, inventory control, inbound–outbound coordination and team supervision.',
+  phone: '+91 9400252637',
+  email: 'bharathvenu3@gmail.com',
+  linkedin: 'https://linkedin.com/in/bharath-venu-b29635365',
+  linkedinDisplay: 'linkedin.com/in/bharath-venu-b29635365',
+  location: 'Trivandrum, Kerala, India',
+  hubCoordinates: '8.5241° N, 76.9366° E',
+  summary:
+    'Logistics professional with supervisory experience in warehouse operations and LPG distribution management. Experienced in team supervision, inbound and outbound coordination, inventory control, documentation, dispatch management and operational safety.',
+};
+
+export const PROFILE_TAGS = [
+  'WAREHOUSE OPERATIONS',
+  'INVENTORY CONTROL',
+  'FIFO / FEFO',
+  'INBOUND',
+  'OUTBOUND',
+  'SAFETY',
+  'TEAM SUPERVISION',
+];
+
+export const IMAGES = {
+  hero: B + 'images/hero_warehouse_ops_1791224619571.jpg',
+  sea: B + 'images/sea_cargo_vessel_1791224631554.jpg',
+  land: B + 'images/land_freight_terminal_1791224641369.jpg',
+  air: B + 'images/air_cargo_freighter_1791224651845.jpg',
+  forklift: B + 'images/ops_forklift_racks_1791224664597.jpg',
+  safetyDepot: B + 'images/safety_industrial_depot_1791224676939.jpg',
+};
+
+export const CAPABILITIES_BOARD: CapabilityArea[] = [
+  {
+    id: 'warehouse-ops',
+    title: 'WAREHOUSE OPERATIONS',
+    shortDesc: 'High-density vertical storage, dynamic aisle traffic management, and bay layout optimization.',
+    detailedScope: [
+      'Multi-tier pallet racking management and weight capacity governance',
+      'Daily equipment inspection (forklifts, stackers, hand pallet trucks)',
+      'Aisle throughput optimization and bottleneck elimination',
+      'End-of-day dock closure protocols and facility security compliance'
+    ],
+    image: IMAGES.hero,
+    metrics: '99.4% Space Utilization'
+  },
+  {
+    id: 'inventory-control',
+    title: 'INVENTORY CONTROL',
+    shortDesc: 'Systematic stock tracking, cycle counting, discrepancy auditing, and inventory variance control.',
+    detailedScope: [
+      'Perpetual cycle counts against physical inventory registers',
+      'Fast-moving vs. slow-moving stock re-slotting',
+      'Barcode validation and serial number tracking',
+      'Root-cause investigations for shrinkage and damaged stock'
+    ],
+    image: IMAGES.forklift,
+    metrics: '99.8% Record Accuracy'
+  },
+  {
+    id: 'inbound-logistics',
+    title: 'INBOUND LOGISTICS',
+    shortDesc: 'Receipt validation, advance shipment notice (ASN) matching, and structured put-away staging.',
+    detailedScope: [
+      'Dock scheduling and trailer unloading coordination',
+      'Damage inspection and packing slip / PO verification',
+      'Quarantine area segregation for non-conforming freight',
+      'Rapid transfer from receiving staging to designated bin locations'
+    ],
+    image: IMAGES.land,
+    metrics: '< 45 min Dock Turnaround'
+  },
+  {
+    id: 'outbound-logistics',
+    title: 'OUTBOUND LOGISTICS',
+    shortDesc: 'Pick-wave sequencing, marshaling area consolidation, and departure scheduling.',
+    detailedScope: [
+      'Order picking batch release and verification',
+      'Stretch wrapping, strapping, and pallet integrity validation',
+      'Carrier handover, manifest signing, and bill of lading (BOL) filing',
+      'On-time dispatch SLA enforcement'
+    ],
+    image: IMAGES.sea,
+    metrics: '100% On-Time Dispatch'
+  },
+  {
+    id: 'safety-compliance',
+    title: 'SAFETY COMPLIANCE',
+    shortDesc: 'Zero-incident safety culture, OSHA standards, PPE enforcement, and hazardous cargo protocols.',
+    detailedScope: [
+      'Mandatory PPE auditing for warehouse personnel and visiting drivers',
+      'LPG and pressurized vessel safety handling protocols (PESO compliant)',
+      'Spill response, fire extinguisher inspection, and emergency evacuation drills',
+      'Daily 5S workplace discipline and aisle clearance enforcement'
+    ],
+    image: IMAGES.safetyDepot,
+    metrics: 'Zero Lost-Time Incidents'
+  },
+  {
+    id: 'manpower-management',
+    title: 'MANPOWER MANAGEMENT',
+    shortDesc: 'Shift allocation, cross-functional dock team leadership, and performance coaching.',
+    detailedScope: [
+      'Supervision of warehouse staff, loaders, and forklift operators',
+      'Daily pre-shift operational briefing and task prioritization',
+      'Cross-training operators on receiving, picking, and staging functions',
+      'Attendance tracking, shift handover logs, and safety toolbox talks'
+    ],
+    image: IMAGES.forklift,
+    metrics: '25+ Team Size Supervised'
+  },
+  {
+    id: 'stock-reconciliation',
+    title: 'STOCK RECONCILIATION',
+    shortDesc: 'ERP-to-floor physical inventory synchronization, variance analysis, and audit trails.',
+    detailedScope: [
+      'Monthly full physical audits and weekly high-value cycle checks',
+      'Investigation and adjustment documentation for inventory variances',
+      'Expiry date tracking and aging stock alerts',
+      'Coordination with internal audit and finance teams'
+    ],
+    image: IMAGES.hero,
+    metrics: '0.02% Variance Threshold'
+  },
+  {
+    id: 'distribution',
+    title: 'DISTRIBUTION',
+    shortDesc: 'Hub-and-spoke distribution, vehicle cube-utilization, and multi-drop delivery routing.',
+    detailedScope: [
+      'Truck load sequencing based on delivery routes and weight distribution',
+      'Transporter coordination and freight rate adherence',
+      'Proof of Delivery (POD) tracking and turnaround optimization',
+      'Reverse logistics and return goods handling'
+    ],
+    image: IMAGES.air,
+    metrics: 'Multi-Region Fleet Staging'
+  }
+];
+
+export const EXPERIENCES: ExperienceItem[] = [
+  {
+    id: 'lulu',
+    company: 'LULU INTERNATIONAL CENTRAL WAREHOUSE',
+    role: 'Warehouse Supervisor',
+    location: 'Trivandrum, Kerala',
+    period: '2025 – Present',
+    isCurrent: true,
+    responsibilities: [
+      'Daily warehouse supervision and dock operations leadership',
+      'Rigorous FIFO / FEFO compliance across high-volume FMCG and retail goods',
+      'Inbound and outbound coordination across multi-temperature storage zones',
+      'Goods receiving, quality verification, and rapid departure dispatch',
+      'Direct manpower management and operational shift allocation',
+      'Continuous inventory monitoring and cycle-count audits',
+      'Storage-space optimisation and vertical pallet density maximization'
+    ],
+    image: IMAGES.forklift,
+    tags: ['CENTRAL DISTRIBUTION HUB', 'RETAIL LOGISTICS', 'HIGH DENSITY STORAGE', 'FIFO / FEFO']
+  },
+  {
+    id: 'prabhath',
+    company: 'PRABHATH WAREHOUSE',
+    role: 'Warehouse In-Charge',
+    location: 'Kollam, Kerala',
+    period: '2024 – 2025',
+    progression: 'Intern → Warehouse In-Charge',
+    responsibilities: [
+      'End-to-end shipment coordination and multi-carrier dispatch scheduling',
+      'Physical stock movement supervision and floor slotting efficiency',
+      'Real-time inventory updates and ERP data integrity maintenance',
+      'Comprehensive documentation including invoices, delivery challans, and gate passes',
+      'Full warehouse operations management across receiving, storage, and customer dispatches'
+    ],
+    image: IMAGES.hero,
+    tags: ['RAPID PROMOTION', 'OPERATIONS MANAGEMENT', 'STOCK MOVEMENT', 'DOCUMENTATION']
+  },
+  {
+    id: 'bharat-gas',
+    company: 'BHARAT GAS',
+    role: 'Warehouse In-Charge',
+    location: 'Kollam, Kerala',
+    period: '2025',
+    isSafetyCritical: true,
+    responsibilities: [
+      'High-risk LPG storage operations and pressurized cylinder yard supervision',
+      'Bulk cylinder dispatch staging and route vehicle turnaround control',
+      'Stringent Safety SOP compliance under PESO and petroleum safety guidelines',
+      'Daily 100% inventory reconciliation for filled, empty, and defective cylinders',
+      'Loading and unloading monitoring with spark-proof handling guidelines',
+      'Ground staff supervision and safety protective equipment enforcement',
+      'Regulatory dispatch documentation, statutory registers, and transit safety compliance'
+    ],
+    image: IMAGES.safetyDepot,
+    tags: ['SAFETY-CRITICAL OPERATIONS', 'HAZARDOUS CARGO', 'LPG DISPATCH', 'SOP COMPLIANCE']
+  }
+];
+
+export const FLOW_STEPS: FlowStep[] = [
+  {
+    step: 1,
+    name: 'RECEIVING',
+    subtitle: 'Dock Gate & Inflow Staging',
+    sop: 'Inspect carrier security seals, check freight against delivery challans, log arrival timestamp, and assign designated unloading bay.',
+    keyAction: 'Physical vehicle check & seal verification',
+    supervisorCheckpoint: 'Seal integrity sign-off and PO match verification'
+  },
+  {
+    step: 2,
+    name: 'INSPECTION',
+    subtitle: 'Quality & Barcode Validation',
+    sop: 'Conduct carton integrity assessment, verify SKU barcodes against packing lists, isolate damaged or defective items in quarantine zone.',
+    keyAction: 'Sampling, SKU scanning & condition check',
+    supervisorCheckpoint: 'Discrepancy reporting & damage logging'
+  },
+  {
+    step: 3,
+    name: 'STORAGE',
+    subtitle: 'Put-Away & Rack Placement',
+    sop: 'Transfer verified pallets to designated vertical storage bins according to velocity classification (fast/slow movers) and load ratings.',
+    keyAction: 'Pallet racking & bin assignment',
+    supervisorCheckpoint: 'Storage density & aisle clearance verification'
+  },
+  {
+    step: 4,
+    name: 'INVENTORY',
+    subtitle: 'FIFO / FEFO & Cycle Counts',
+    sop: 'Record bin locations into system, rotate stock to enforce First-In-First-Out / First-Expired-First-Out, and execute daily cycle checks.',
+    keyAction: 'Stock audit & expiry tracking',
+    supervisorCheckpoint: 'Perpetual stock register variance reconciliation'
+  },
+  {
+    step: 5,
+    name: 'PICKING',
+    subtitle: 'Wave & Batch Consolidation',
+    sop: 'Generate pick waves from dispatch orders, pick items with RF scanner confirmation, consolidate at marshaling area for order packaging.',
+    keyAction: 'Pick-path execution & order grouping',
+    supervisorCheckpoint: 'Pick accuracy check before protective pallet wrapping'
+  },
+  {
+    step: 6,
+    name: 'LOADING',
+    subtitle: 'Weight & Axle Optimization',
+    sop: 'Stage pallets by reverse drop order, load transport vehicles respecting axle weight limits, and secure freight with strapping/dunnage.',
+    keyAction: 'Safe dock loading & cube utilization',
+    supervisorCheckpoint: 'Vehicle weight balance & cargo tie-down approval'
+  },
+  {
+    step: 7,
+    name: 'DISPATCH',
+    subtitle: 'Outbound Release & Departure',
+    sop: 'Issue signed Outbound Gate Pass, verify driver credentials, hand over Invoices & E-Way bills, and stamp vehicle departure log.',
+    keyAction: 'Final paperwork handover & gate clearance',
+    supervisorCheckpoint: 'Final seal application & dispatch system update'
+  }
+];
+
+export const SKILL_CATEGORIES = [
+  {
+    category: 'SYSTEMS & DOCUMENTATION',
+    skills: [
+      { name: 'SAP ERP', level: 'Core Operational' },
+      { name: 'Inventory Control', level: 'Advanced' },
+      { name: 'MS Excel (VLOOKUP, Pivot, Trackers)', level: 'Proficient' },
+      { name: 'Dispatch Documentation (E-Way, Gate Pass, BOL)', level: 'Specialist' },
+    ]
+  },
+  {
+    category: 'WAREHOUSE & INVENTORY STRATEGY',
+    skills: [
+      { name: 'Warehouse Operations', level: 'Supervisory' },
+      { name: 'Inbound Logistics', level: 'Advanced' },
+      { name: 'Outbound Logistics', level: 'Advanced' },
+      { name: 'Goods Receiving & Inspection', level: 'Standard SOP' },
+      { name: 'FIFO / FEFO Methodology', level: 'Strict Compliance' },
+      { name: 'Stock Reconciliation & Variance Control', level: 'Audit Grade' },
+    ]
+  },
+  {
+    category: 'LOGISTICS & TRANSPORTATION',
+    skills: [
+      { name: 'Vendor Coordination', level: 'Daily Interface' },
+      { name: 'Transport Coordination & Fleet Staging', level: 'Route Planning' },
+      { name: 'Dock Scheduling & Throughput Management', level: 'High-Density' },
+      { name: 'Dangerous Goods / LPG Safety Protocols', level: 'Certified SOP' },
+    ]
+  },
+  {
+    category: 'OPERATIONAL LEADERSHIP',
+    skills: [
+      { name: 'Team Supervision & Manpower Allocation', level: 'Proven Leader' },
+      { name: 'Critical Thinking & Crisis Handling', level: 'Real-time' },
+      { name: 'Multitasking Under High Pressure', level: 'Fast-paced Docks' },
+      { name: '5S & Workplace Safety Enforcement', level: 'Zero Tolerance' },
+    ]
+  }
+];
+
+export const EDUCATION: EducationItem[] = [
+  {
+    degree: 'Bachelor of Business Administration (BBA)',
+    period: '2025 – Present',
+    institution: 'Manonmaniam Sundaranar University',
+    highlight: 'Specialization in Operational Management & Business Administration'
+  },
+  {
+    degree: 'PG Diploma in Logistics & Supply Chain Management',
+    period: '2024 – 2025',
+    institution: 'KAMS Education',
+    highlight: 'Advanced Supply Chain Strategy, Multimodal Freight, and Warehouse Layout Engineering'
+  },
+  {
+    degree: 'Certificate in Food & Beverage Services',
+    period: '2022',
+    institution: 'ITM Hotel Management School',
+    highlight: 'Service Hygiene, Food Handling Standards, and Quality Controls'
+  },
+  {
+    degree: 'Higher Secondary Examination (HSE)',
+    period: '2021',
+    institution: 'Kerala State Board',
+    score: '74%',
+    highlight: 'Commerce & Business Studies'
+  },
+  {
+    degree: 'Secondary School Leaving Certificate (SSLC)',
+    period: '2019',
+    institution: 'Kerala State Board',
+    score: '89%',
+    highlight: 'High Distinction Academic Standing'
+  }
+];
+
+export const LEADERSHIP: LeadershipItem[] = [
+  {
+    title: 'BOXING',
+    award: 'State Level Prize Holder',
+    category: 'Athletics',
+    keywords: ['Focus', 'Endurance', 'Discipline'],
+    description: 'Developed lightning situational assessment, physical stamina for grueling 12-hour high-tempo dock shifts, and the psychological tenacity required to overcome high-pressure logistics bottlenecks.'
+  },
+  {
+    title: 'KARATE',
+    award: 'Black Belt — SHO-DAN',
+    category: 'Martial Arts',
+    keywords: ['Control', 'Consistency', 'Composure'],
+    description: 'Black belt mastery instilling unyielding composure, meticulous respect for hierarchy and standard operating procedures, and unwavering attention to minute physical details.'
+  },
+  {
+    title: 'NCC (National Cadet Corps)',
+    award: 'Corporal · A Certificate Holder',
+    category: 'Cadet Corps',
+    keywords: ['Leadership', 'Teamwork', 'Responsibility', 'Discipline'],
+    description: 'Trained under military drill instructors in chain-of-command execution, tactical squad leadership, crisis safety response, and taking absolute accountability for personnel and mission outcomes.'
+  }
+];
+
+export const LANGUAGES = [
+  { name: 'ENGLISH', proficiency: 'Fluent', desc: 'Professional workplace & technical documentation' },
+  { name: 'MALAYALAM', proficiency: 'Native', desc: 'Native fluency & regional crew leadership' },
+  { name: 'TAMIL', proficiency: 'Intermediate', desc: 'Interstate transport driver coordination' },
+  { name: 'HINDI', proficiency: 'Basic', desc: 'Ground crew & national hauler communication' },
+];
+
+export const CAREER_TARGETS = [
+  'Cargo Team Leader',
+  'Terminal Team Leader',
+  'Warehouse Supervisor',
+  'Logistics Operations',
+  'Supply Chain Operations'
+];
+
+export const GALLERY_ITEMS: GalleryItem[] = [
+  {
+    id: 'g-hero-wh',
+    title: 'Automated High-Bay Storage Aisles',
+    category: 'WAREHOUSE',
+    image: IMAGES.hero,
+    span: 'col-span-1 md:col-span-2 row-span-2',
+    caption: 'High-density multi-tier pallet storage with dedicated fork travel corridors.'
+  },
+  {
+    id: 'g-sea-freight',
+    title: 'Maritime Inbound Freight Vessels',
+    category: 'CARGO',
+    image: IMAGES.sea,
+    span: 'col-span-1 row-span-1 md:row-span-2',
+    caption: 'Intermodal container transshipment connecting global manufacturers to regional distribution hubs.'
+  },
+  {
+    id: 'g-land-fleet',
+    title: 'Cross-Dock Fleet Staging Bay',
+    category: 'DISTRIBUTION',
+    image: IMAGES.land,
+    span: 'col-span-1 md:col-span-2 row-span-1',
+    caption: 'Heavy logistics transport fleet synchronizing arrival and departure turnarounds.'
+  },
+  {
+    id: 'g-forklift-ops',
+    title: 'Vertical Precision Pallet Placement',
+    category: 'INVENTORY',
+    image: IMAGES.forklift,
+    span: 'col-span-1 row-span-1',
+    caption: 'Electric forklift maneuver in high-bay racking under strict safety protocols.'
+  },
+  {
+    id: 'g-safety-depot',
+    title: 'Hazardous LPG Storage Yard',
+    category: 'DISPATCH',
+    image: IMAGES.safetyDepot,
+    span: 'col-span-1 row-span-1',
+    caption: 'Explosion-proof staging and cylinder reconciliation yard with strict PESO guidelines.'
+  },
+  {
+    id: 'g-air-freight',
+    title: 'Express Air Freight Terminal Handover',
+    category: 'TERMINAL',
+    image: IMAGES.air,
+    span: 'col-span-1 md:col-span-2 row-span-1',
+    caption: 'Time-critical air cargo pallets staged for freighter tarmac loading.'
+  }
+];
+
+// ---- CMS bridge: live data is overwritten in place from /api/content before first render ----
+export const CONTENT_KEYS = ['PERSONAL_INFO','PROFILE_TAGS','IMAGES','CAPABILITIES_BOARD','EXPERIENCES','FLOW_STEPS','SKILL_CATEGORIES','EDUCATION','LEADERSHIP','LANGUAGES','CAREER_TARGETS','GALLERY_ITEMS'] as const;
+const live: Record<string, any> = { PERSONAL_INFO, PROFILE_TAGS, IMAGES, CAPABILITIES_BOARD, EXPERIENCES, FLOW_STEPS, SKILL_CATEGORIES, EDUCATION, LEADERSHIP, LANGUAGES, CAREER_TARGETS, GALLERY_ITEMS };
+export function applyContent(c: Record<string, any>) {
+  for (const k of CONTENT_KEYS) {
+    if (c?.[k] == null) continue;
+    if (Array.isArray(live[k])) live[k].splice(0, live[k].length, ...c[k]);
+    else Object.assign(live[k], c[k]);
+  }
+}
