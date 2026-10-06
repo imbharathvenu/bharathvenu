@@ -18,7 +18,7 @@ export default async function handler(req: any, res: any) {
     if (buf.length > 4 * 1024 * 1024) return res.status(413).json({ error: 'Max 4 MB' });
     const name = `${Date.now()}-${crypto.randomBytes(3).toString('hex')}.${ext}`;
     await putFile(`public/uploads/${name}`, buf.toString('base64'), 'Admin: upload image');
-    res.status(200).json({ url: `/uploads/${name}` });
+    res.status(200).json({ url: `uploads/${name}` });
   } catch (e: any) {
     res.status(500).json({ error: String(e?.message || e) });
   }

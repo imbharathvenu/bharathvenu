@@ -1,193 +1,244 @@
-import { useEffect, useState } from 'react';
-import * as D from '../data/portfolioData';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { defaultContent, normalizeContent } from '../data/portfolioData';
+import { fetchLiveContent, pingSiteTabs } from '../data/runtime';
+import { THEME_GROUPS } from '../data/theme';
+import { ApiError, BASE, STATIC, apiBase, call, clearAuth, hasToken, setApiBase, TOKEN } from './api';
+import { Field, btn, inp, primaryBtn, useDebounced } from './fields';
+import { SectionsEditor, ThemeEditor } from './ThemeEditor';
+import { StoragePanel } from './StoragePanel';
 
 type J = any;
-const T = 'bv_admin_token';
-const defaults = (): J => JSON.parse(JSON.stringify(Object.fromEntries(D.CONTENT_KEYS.map((k) => [k, (D as any)[k]]))));
-const hdr = (extra: Record<string, string> = {}) => ({ ...extra, Authorization: 'Bearer ' + (localStorage.getItem(T) || '') });
+type Block = { title: string; path: string; only?: string[]; note?: string };
+type Page = { id: string; label: string; icon: string; group: string; blocks?: Block[] };
 
-// ---- On GitHub Pages the admin talks to the Vercel functions (same admin password) ----
-const STATIC = location.hostname.endsWith('github.io') || new URLSearchParams(location.search).has('static');
-const BASE: string = (import.meta as any).env?.BASE_URL ?? '/';
-const GA = 'bv_api_url';
-// Default guess for the Vercel address: https://<repo-name>.vercel.app (change here if yours differs)
-const GUESS = 'https://' + (location.pathname.split('/')[1] || '').replace(/^admin$/, '') + '.vercel.app';
-const API = () => (STATIC ? localStorage.getItem(GA) || GUESS : '');
-const clearAuth = () => localStorage.removeItem(T);
+const PAGES: Page[] = [
+  { id: 'hero', label: 'Hero & name', icon: '🏠', group: 'Content', blocks: [
+    { title: 'Name, job title & tagline', path: 'PERSONAL_INFO', only: ['name', 'title', 'tagline', 'hubCoordinates'], note: 'The name and title appear in the navbar, hero, footer and CV. Use "|" in the title to split it into two lines.' },
+    { title: 'Hero text & buttons', path: 'SITE.hero' }, { title: 'Hero image', path: 'IMAGES', only: ['hero'] } ] },
+  { id: 'contact', label: 'Contact details', icon: '📞', group: 'Content', blocks: [
+    { title: 'Phone, email, links', path: 'PERSONAL_INFO', only: ['phone', 'email', 'linkedin', 'linkedinDisplay', 'location'] }, { title: 'Contact section text', path: 'SITE.contact' } ] },
+  { id: 'profile', label: 'Profile', icon: '👤', group: 'Content', blocks: [
+    { title: 'Summary', path: 'PERSONAL_INFO', only: ['summary'] }, { title: 'Profile section', path: 'SITE.profile' }, { title: 'Domain tags', path: 'PROFILE_TAGS' } ] },
+  { id: 'strip', label: 'Sea · Land · Air', icon: '🚢', group: 'Content', blocks: [{ title: 'Strip panels', path: 'SITE.strip' }] },
+  { id: 'operations', label: 'Areas of expertise', icon: '📦', group: 'Content', blocks: [{ title: 'Section text', path: 'SITE.operations' }, { title: 'Expertise cards', path: 'CAPABILITIES_BOARD' }] },
+  { id: 'experience', label: 'Experience', icon: '💼', group: 'Content', blocks: [{ title: 'Section text', path: 'SITE.experience' }, { title: 'Jobs', path: 'EXPERIENCES' }] },
+  { id: 'flow', label: 'Operational flow', icon: '🔄', group: 'Content', blocks: [{ title: 'Section text', path: 'SITE.flow' }, { title: 'Steps (numbered automatically)', path: 'FLOW_STEPS' }] },
+  { id: 'banner', label: 'Manifesto banner', icon: '🖼️', group: 'Content', blocks: [{ title: 'Banner', path: 'SITE.banner' }] },
+  { id: 'skills', label: 'Skills', icon: '🛠️', group: 'Content', blocks: [{ title: 'Section text', path: 'SITE.skills' }, { title: 'Capability tiles', path: 'SKILL_GRID' }, { title: 'Skill lists', path: 'SKILL_CATEGORIES' }] },
+  { id: 'education', label: 'Education', icon: '🎓', group: 'Content', blocks: [{ title: 'Section text', path: 'SITE.education' }, { title: 'Qualifications', path: 'EDUCATION' }] },
+  { id: 'leadership', label: 'Leadership & languages', icon: '🥋', group: 'Content', blocks: [{ title: 'Section text', path: 'SITE.leadership' }, { title: 'Leadership cards', path: 'LEADERSHIP' }, { title: 'Languages', path: 'LANGUAGES' }] },
+  { id: 'career', label: 'Career focus', icon: '🎯', group: 'Content', blocks: [{ title: 'Section text', path: 'SITE.career' }, { title: 'Target roles (also the contact-form role list)', path: 'CAREER_TARGETS' }] },
+  { id: 'gallery', label: 'Gallery', icon: '📷', group: 'Content', blocks: [{ title: 'Section text', path: 'SITE.gallery' }, { title: 'Photos', path: 'GALLERY_ITEMS' }] },
+  { id: 'footer', label: 'Menu, footer & CV', icon: '🧾', group: 'Content', blocks: [{ title: 'Menu labels', path: 'SITE.nav' }, { title: 'Footer', path: 'SITE.footer' }, { title: 'CV (print view)', path: 'SITE.resume' }] },
+  { id: 'sections', label: 'Sections & order', icon: '🧩', group: 'Design' },
+  ...THEME_GROUPS.map((g) => ({ id: 'theme-' + g.id, label: g.label, icon: ({ colors: '🎨', fonts: '🔤', layout: '📐', effects: '✨' } as any)[g.id], group: 'Design' })),
+  { id: 'storage', label: 'GitHub & backups', icon: '☁️', group: 'Storage' },
+];
 
-const LABELS: Record<string, string> = {
-  PERSONAL_INFO: 'Personal & Contact', PROFILE_TAGS: 'Profile Tags', IMAGES: 'Core Images',
-  CAPABILITIES_BOARD: 'Capabilities Board', EXPERIENCES: 'Experience', FLOW_STEPS: 'Operational Flow',
-  SKILL_CATEGORIES: 'Skills', EDUCATION: 'Education', LEADERSHIP: 'Leadership',
-  LANGUAGES: 'Languages', CAREER_TARGETS: 'Career Focus', GALLERY_ITEMS: 'Gallery',
-};
-const LONG = ['summary', 'description', 'desc', 'sop', 'caption', 'shortDesc', 'tagline', 'highlight', 'detailedScope'];
-
-const blank = (v: J): J =>
-  Array.isArray(v) ? (v.length ? [blank(v[0])] : []) :
-  v && typeof v === 'object' ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, blank(x)])) :
-  typeof v === 'number' ? 0 : typeof v === 'boolean' ? false : '';
-
-const inp = 'w-full bg-[#081F26] border border-[#236477]/60 text-[#F4F2EB] px-3 py-2 text-sm focus:outline-none focus:border-[#E8892B]';
-const btn = 'px-3 py-1.5 text-xs font-bold tracking-widest uppercase border border-[#236477] hover:border-[#E8892B] hover:text-[#E8892B] transition-colors';
-
-function Upload({ onDone }: { onDone: (url: string) => void }) {
-  const [busy, setBusy] = useState(false);
-  return (
-    <label className={btn + ' cursor-pointer inline-block'}>
-      {busy ? 'Uploading…' : 'Upload'}
-      <input type="file" accept="image/*" hidden onChange={async (e) => {
-        const f = e.target.files?.[0]; if (!f) return;
-        setBusy(true);
-        const r = await fetch(API() + '/api/upload', { method: 'POST', headers: hdr({ 'Content-Type': f.type }), body: f });
-        setBusy(false);
-        r.ok ? onDone(STATIC ? BASE + (await r.json()).url.replace(/^\//, '') : (await r.json()).url) : alert('Upload failed (max 4 MB, JPG/PNG/WEBP/GIF/SVG)');
-      }} />
-    </label>
-  );
-}
-
-function Field({ name, v, set, path }: { name: string; v: J; set: (x: J) => void; path: string }) {
-  if (Array.isArray(v)) {
-    const prim = v.length === 0 || typeof v[0] !== 'object';
-    const move = (i: number, d: number) => { const a = [...v]; const j = i + d; if (j < 0 || j >= a.length) return; [a[i], a[j]] = [a[j], a[i]]; set(a); };
-    return (
-      <div className="space-y-3">
-        {v.map((it, i) => (
-          <div key={i} className={prim ? 'flex gap-2' : 'border border-[#236477]/50 p-4 bg-[#102932]/60'}>
-            <div className={prim ? 'flex-1' : ''}>
-              {!prim && <div className="flex items-center justify-between mb-3 text-[10px] tracking-widest text-[#7DAFB9]">
-                <span>ITEM {String(i + 1).padStart(2, '0')}{it.title || it.company || it.name || it.degree ? ' — ' + (it.title || it.company || it.name || it.degree) : ''}</span>
-              </div>}
-              <Field name={name} v={it} path={path} set={(x) => set(v.map((o, j) => (j === i ? x : o)))} />
-            </div>
-            <div className={'flex gap-1 ' + (prim ? '' : 'mt-3')}>
-              <button className={btn} onClick={() => move(i, -1)}>↑</button>
-              <button className={btn} onClick={() => move(i, 1)}>↓</button>
-              <button className={btn + ' hover:!border-red-400 hover:!text-red-400'} onClick={() => confirm('Remove this item?') && set(v.filter((_, j) => j !== i))}>✕</button>
-            </div>
-          </div>
-        ))}
-        <button className={btn} onClick={() => set([...v, prim ? '' : blank(v[0])])}>+ Add</button>
-      </div>
-    );
-  }
-  if (v && typeof v === 'object')
-    return (
-      <div className="space-y-4">
-        {Object.entries(v).map(([k, x]) => (
-          <div key={k}>
-            <div className="text-[10px] tracking-widest uppercase text-[#7DAFB9] mb-1">{k}</div>
-            <Field name={k} v={x} path={path + '.' + k} set={(n) => set({ ...v, [k]: n })} />
-          </div>
-        ))}
-      </div>
-    );
-  const isImg = name === 'image' || path.startsWith('IMAGES.');
-  if (typeof v === 'boolean')
-    return <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={v} onChange={(e) => set(e.target.checked)} /> Enabled</label>;
-  if (isImg)
-    return (
-      <div className="flex gap-3 items-start">
-        {v && <img src={v} alt="" className="w-28 h-20 object-cover border border-[#236477]/60" />}
-        <div className="flex-1 space-y-2"><input className={inp} value={v} onChange={(e) => set(e.target.value)} placeholder="/images/… or /uploads/…" /><Upload onDone={set} /></div>
-      </div>
-    );
-  if (typeof v === 'number') return <input type="number" className={inp} value={v} onChange={(e) => set(Number(e.target.value))} />;
-  return LONG.includes(name) || String(v).length > 90
-    ? <textarea className={inp + ' min-h-24'} value={v} onChange={(e) => set(e.target.value)} />
-    : <input className={inp} value={v} onChange={(e) => set(e.target.value)} />;
-}
+const getPath = (o: J, p: string) => p.split('.').reduce((a, k) => a?.[k], o);
+const setPath = (o: J, p: string, v: J): J => { const [h, ...t] = p.split('.'); return { ...o, [h]: t.length ? setPath(o[h] ?? {}, t.join('.'), v) : v }; };
+const same = (a: J, b: J) => JSON.stringify(a) === JSON.stringify(b);
+const DRAFT = 'bv_admin_draft';
 
 export default function Admin() {
-  const [authed, setAuthed] = useState(!!localStorage.getItem(T));
-  const [site, setSite] = useState(localStorage.getItem(GA) || '');
-  const [askSite, setAskSite] = useState(false);
-  const [pw, setPw] = useState('');
-  const [err, setErr] = useState('');
+  const [authed, setAuthed] = useState(hasToken());
+  const [pw, setPw] = useState(''); const [err, setErr] = useState(''); const [site, setSite] = useState(apiBase()); const [askSite, setAskSite] = useState(false);
   const [data, setData] = useState<J>(null);
-  const [tab, setTab] = useState('');
-  const [dirty, setDirty] = useState(false);
-  const [msg, setMsg] = useState('');
+  const [saved, setSaved] = useState<J>(null);           // last content known to be in storage
+  const [sha, setSha] = useState<string | null>(null);
+  const [page, setPage] = useState('hero');
+  const [msg, setMsg] = useState<{ t: string; kind: 'ok' | 'err' | 'info' } | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [conflict, setConflict] = useState(false);
+  const [live, setLive] = useState<'' | 'waiting' | 'live' | 'slow'>('');
+  const [preview, setPreview] = useState(false);
+  const [device, setDevice] = useState<'desktop' | 'tablet' | 'phone'>('desktop');
+  const [draftOffer, setDraftOffer] = useState<J>(null);
+  const past = useRef<J[]>([]); const lastPush = useRef(0);
+  const frame = useRef<HTMLIFrameElement>(null);
+  const dirty = !!data && !!saved && !same(data, saved);
 
+  const flash = (t: string, kind: 'ok' | 'err' | 'info' = 'ok', ms = 4500) => { setMsg({ t, kind }); if (ms) setTimeout(() => setMsg((m) => (m?.t === t ? null : m)), ms); };
+  const fail = (e: any) => { if (e instanceof ApiError && e.status === 401) { setAuthed(false); } flash(e.message || String(e), 'err', 8000); };
+
+  // ---- load: always the real latest from storage, never a cached copy ----
+  const load = useCallback(async () => {
+    let content: J = null, s: string | null = null;
+    try { const j = await call<any>('/api/admin?action=load'); content = j.content; s = j.sha; }
+    catch (e: any) { if (e.status === 401) { setAuthed(false); return; } /* not configured yet: fall through */ }
+    if (!content) content = (await fetchLiveContent()) || defaultContent();
+    const n = normalizeContent(content);
+    setData(n); setSaved(n); setSha(s); past.current = [];
+    try { const d = JSON.parse(localStorage.getItem(DRAFT) || 'null'); if (d && !same(normalizeContent(d.data), n)) setDraftOffer(d); } catch { /* ignore */ }
+  }, []);
+  useEffect(() => { if (authed) load(); }, [authed, load]);
+
+  // ---- editing (with undo + draft autosave) ----
+  const update = useCallback((next: J, coalesce = true) => {
+    setData((cur: J) => {
+      const now = Date.now();
+      if (!coalesce || now - lastPush.current > 800) { past.current.push(cur); if (past.current.length > 40) past.current.shift(); }
+      lastPush.current = now;
+      return next(cur);
+    });
+  }, []);
+  const undo = () => { const p = past.current.pop(); if (p) setData(p); };
+  const edit = (path: string, v: J) => update((cur: J) => {
+    let n = setPath(cur, path, v);
+    if (path === 'FLOW_STEPS') n = { ...n, FLOW_STEPS: v.map((s: J, i: number) => ({ ...s, step: i + 1 })) };
+    return n;
+  });
+  const debouncedData = useDebounced(data, 600);
   useEffect(() => {
-    if (!authed) return;
-    const done = (d: J) => { setData(d); setTab(Object.keys(d)[0]); };
-    fetch(API() + '/api/content').then((r) => (r.ok ? r.json() : defaults())).catch(() => defaults()).then(done);
-  }, [authed]);
+    if (!debouncedData || !saved) return;
+    try { dirty ? localStorage.setItem(DRAFT, JSON.stringify({ data: debouncedData, at: Date.now() })) : localStorage.removeItem(DRAFT); } catch { /* quota */ }
+  }, [debouncedData, dirty, saved]);
+  useEffect(() => { const h = (e: BeforeUnloadEvent) => { if (dirty) e.preventDefault(); }; addEventListener('beforeunload', h); return () => removeEventListener('beforeunload', h); }, [dirty]);
+
+  // ---- live preview (instant, no save needed) ----
+  const send = useCallback(() => { if (data) frame.current?.contentWindow?.postMessage({ type: 'bv-draft', content: data }, location.origin); }, [data]);
+  useEffect(() => { if (preview) send(); }, [preview, send]);
+  useEffect(() => { const h = (e: MessageEvent) => { if (e.data?.type === 'bv-preview-ready') send(); }; addEventListener('message', h); return () => removeEventListener('message', h); }, [send]);
+
+  // ---- save ----
+  const watchLive = async (content: J) => {
+    setLive('waiting');
+    const want = JSON.stringify(normalizeContent(content));
+    for (let i = 0; i < 30; i++) {
+      await new Promise((r) => setTimeout(r, 4000));
+      const got = await fetchLiveContent().catch(() => null);
+      if (got && JSON.stringify(normalizeContent(got)) === want) { setLive('live'); return; }
+    }
+    setLive('slow');
+  };
+  const save = async (force = false) => {
+    if (!data || saving) return;
+    setSaving(true); setConflict(false);
+    try {
+      const r = await call<any>('/api/content', { method: 'PUT', json: { content: data, baseSha: force ? undefined : sha || undefined, message: 'Admin: update content' } });
+      setSaved(data); setSha(r.sha || null); localStorage.removeItem(DRAFT); pingSiteTabs();
+      flash('Saved ✓'); watchLive(data);
+    } catch (e: any) {
+      if (e.status === 409) setConflict(true); else fail(e);
+    }
+    setSaving(false);
+  };
   useEffect(() => {
-    const h = (e: BeforeUnloadEvent) => dirty && e.preventDefault();
-    addEventListener('beforeunload', h); return () => removeEventListener('beforeunload', h);
-  }, [dirty]);
+    const h = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); if (dirty) save(); }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && !(e.target as HTMLElement)?.matches?.('input,textarea')) { e.preventDefault(); undo(); }
+    };
+    addEventListener('keydown', h); return () => removeEventListener('keydown', h);
+  });
 
   const login = async () => {
-    if (STATIC && site.trim()) {
-      let u = site.trim().replace(/\/+$/, '').replace(/\/admin$/, '');
-      if (!/^https?:\/\//.test(u)) u = 'https://' + u;
-      localStorage.setItem(GA, u);
-    }
+    if (STATIC && site.trim()) setApiBase(site);
     let r: Response;
-    try { r = await fetch(API() + '/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pw }) }); }
-    catch { setAskSite(true); return setErr('Could not reach your Vercel site — enter its address below'); }
-    if (r.status === 404 || r.status === 405) { setAskSite(true); return setErr('Could not find your Vercel site — enter its address below'); }
+    try { r = await fetch(apiBase() + '/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pw }) }); }
+    catch { setAskSite(true); return setErr('Could not reach your server — check the address below'); }
+    if (r.status === 404 || r.status === 405) { setAskSite(true); return setErr('Could not find the admin server — enter its address below'); }
+    if (r.status === 500) return setErr('Server is not configured yet (ADMIN_PASSWORD / GITHUB_TOKEN / GITHUB_REPO)');
     if (!r.ok) return setErr('Incorrect password');
-    localStorage.setItem(T, (await r.json()).token); setAuthed(true);
+    localStorage.setItem(TOKEN, (await r.json()).token); setErr(''); setAuthed(true);
   };
-  const save = async () => {
-    const r = await fetch(API() + '/api/content', { method: 'PUT', headers: hdr({ 'Content-Type': 'application/json' }), body: JSON.stringify(data) });
-    if (r.status === 401) { clearAuth(); return setAuthed(false); }
-    setDirty(false); setMsg(r.ok ? (STATIC ? 'Saved — site rebuilds, live in ~1–2 min' : 'Saved — live in ~30 seconds') : 'Save failed'); setTimeout(() => setMsg(''), 3000);
-  };
-  const reset = async () => {
-    if (!confirm('Reset ALL content to the original defaults? This cannot be undone.')) return;
-    const r = await fetch(API() + '/api/content/reset', { method: 'POST', headers: hdr() });
-    if (r.ok) { setData(defaults()); setDirty(false); }
-  };
+
+  const cur = PAGES.find((p) => p.id === page)!;
+  const groups = useMemo(() => ['Content', 'Design', 'Storage'].map((g) => ({ g, items: PAGES.filter((p) => p.group === g) })), []);
 
   if (!authed)
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#081F26] p-6">
-        <div className="w-full max-w-sm border border-[#236477]/60 bg-[#102932] p-8 space-y-4">
-          <div className="text-[10px] tracking-[0.3em] text-[#E8892B]">BV / CONTENT ADMIN</div>
+      <div className="min-h-screen flex items-center justify-center bg-[#081F26] p-6 text-[#F4F2EB]">
+        <div className="w-full max-w-sm border border-[#236477]/60 bg-[#102932] p-8 space-y-4 rounded-sm">
+          <div className="text-[10px] tracking-[0.3em] text-[#E8892B]">PORTFOLIO / ADMIN</div>
           <h1 className="font-heading text-2xl font-bold">Sign in</h1>
-          {STATIC && askSite && <input className={inp} placeholder="Vercel site address (e.g. bharathvenu.vercel.app)" value={site} onChange={(e) => setSite(e.target.value)} />}
-          <input type="password" className={inp} placeholder="Admin password" value={pw} autoFocus
-            onChange={(e) => setPw(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && login()} />
+          {STATIC && askSite && <input className={inp} placeholder="Server address (e.g. bharathvenu.vercel.app)" value={site} onChange={(e) => setSite(e.target.value)} />}
+          <input type="password" className={inp} placeholder="Admin password" value={pw} autoFocus onChange={(e) => setPw(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && login()} />
           {err && <div className="text-red-400 text-sm">{err}</div>}
-          <button className={btn + ' w-full !py-3'} onClick={login}>Enter</button>
+          <button className={primaryBtn + ' w-full !py-3'} onClick={login}>Enter</button>
         </div>
       </div>
     );
-  if (!data) return <div className="p-10 text-[#7DAFB9]">Loading…</div>;
+  if (!data) return <div className="min-h-screen bg-[#081F26] p-10 text-[#7DAFB9]">Loading latest content…</div>;
+
+  const width = { desktop: '100%', tablet: '768px', phone: '390px' }[device];
+  const isTheme = page.startsWith('theme-');
 
   return (
-    <div className="min-h-screen bg-[#081F26] md:flex">
-      <aside className="md:w-64 md:min-h-screen border-b md:border-b-0 md:border-r border-[#236477]/40 bg-[#102932] p-4 md:sticky md:top-0 md:h-screen overflow-auto">
-        <div className="text-[10px] tracking-[0.3em] text-[#E8892B] mb-4">BV / CONTENT ADMIN</div>
-        <nav className="flex md:block gap-1 overflow-x-auto">
-          {Object.keys(data).map((k) => (
-            <button key={k} onClick={() => setTab(k)}
-              className={'block whitespace-nowrap text-left w-full px-3 py-2 text-sm border-l-2 ' + (tab === k ? 'border-[#E8892B] bg-[#063F4B] text-white' : 'border-transparent text-[#ADB8BD] hover:text-white')}>
-              {LABELS[k] || k}
-            </button>
-          ))}
-        </nav>
-        <div className="hidden md:block mt-6 space-y-2">
-          <a href="/" target="_blank" className={btn + ' block text-center'}>View site ↗</a>
-          <button className={btn + ' w-full'} onClick={reset}>Reset defaults</button>
-          <button className={btn + ' w-full'} onClick={() => { clearAuth(); setAuthed(false); }}>Log out</button>
+    <div className="min-h-screen bg-[#081F26] text-[#F4F2EB] md:flex" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+      <aside className="md:w-60 md:min-h-screen shrink-0 border-b md:border-b-0 md:border-r border-[#236477]/40 bg-[#102932] p-3 md:sticky md:top-0 md:h-screen overflow-auto">
+        <div className="text-[10px] tracking-[0.3em] text-[#E8892B] mb-3 px-2">PORTFOLIO / ADMIN</div>
+        {groups.map(({ g, items }) => (
+          <div key={g} className="mb-3">
+            <div className="text-[10px] tracking-widest text-[#7DAFB9]/70 px-2 mb-1 hidden md:block">{g.toUpperCase()}</div>
+            <nav className="flex md:block gap-1 overflow-x-auto">
+              {items.map((p) => (
+                <button key={p.id} onClick={() => setPage(p.id)} className={'block whitespace-nowrap text-left w-full px-3 py-1.5 text-sm rounded-sm border-l-2 cursor-pointer ' + (page === p.id ? 'border-[#E8892B] bg-[#063F4B] text-white' : 'border-transparent text-[#ADB8BD] hover:text-white')}>
+                  <span className="mr-2">{p.icon}</span>{p.label}
+                </button>
+              ))}
+            </nav>
+          </div>
+        ))}
+        <div className="hidden md:block mt-4 space-y-2">
+          <a href={BASE} target="_blank" rel="noreferrer" className={btn + ' block text-center'}>View site ↗</a>
+          <button className={btn + ' w-full'} onClick={() => { if (!dirty || confirm('You have unsaved changes. Log out anyway?')) { clearAuth(); setAuthed(false); } }}>Log out</button>
         </div>
       </aside>
-      <main className="flex-1 min-w-0">
-        <div className="sticky top-0 z-10 flex items-center justify-between gap-4 px-6 py-3 bg-[#081F26]/95 backdrop-blur border-b border-[#236477]/40">
-          <h2 className="font-heading font-bold text-lg">{LABELS[tab] || tab}</h2>
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-[#7DAFB9]">{msg || (dirty ? 'Unsaved changes' : '')}</span>
-            <button onClick={save} disabled={!dirty} className="px-5 py-2 text-xs font-bold tracking-widest uppercase bg-[#E8892B] text-[#081F26] disabled:opacity-30">Save</button>
+
+      <main className="flex-1 min-w-0 flex flex-col">
+        <div className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 px-4 md:px-6 py-3 bg-[#081F26]/95 backdrop-blur border-b border-[#236477]/40">
+          <h2 className="font-heading font-bold text-lg">{cur.icon} {cur.label}</h2>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className={'text-xs ' + (msg?.kind === 'err' ? 'text-red-300' : 'text-[#7DAFB9]')}>
+              {msg?.t || (saving ? 'Saving…' : dirty ? '● Unsaved changes' : live === 'waiting' ? 'Saved — waiting to go live…' : live === 'live' ? '✓ Live on your site' : live === 'slow' ? 'Saved — site still rebuilding, check again shortly' : '✓ Up to date')}
+            </span>
+            <button className={btn} onClick={undo} disabled={!past.current.length} title="Ctrl+Z">Undo</button>
+            {dirty && <button className={btn} onClick={() => confirm('Discard all unsaved changes?') && setData(saved)}>Discard</button>}
+            <button className={btn + (preview ? ' !border-[#E8892B] !text-[#E8892B]' : '')} onClick={() => setPreview(!preview)}>Live preview</button>
+            <button onClick={() => save()} disabled={!dirty || saving} className={primaryBtn} title="Ctrl+S">{saving ? 'Saving…' : 'Save'}</button>
           </div>
         </div>
-        <div className="p-6 max-w-4xl">
-          <Field key={tab} name={tab} v={data[tab]} path={tab} set={(x) => { setData({ ...data, [tab]: x }); setDirty(true); }} />
+
+        {draftOffer && (
+          <div className="mx-4 md:mx-6 mt-4 p-3 border border-amber-400/50 bg-amber-400/10 text-sm flex flex-wrap items-center gap-3 rounded-sm">
+            <span className="flex-1">Unsaved edits from {new Date(draftOffer.at).toLocaleString()} were found in this browser.</span>
+            <button className={btn} onClick={() => { setData(normalizeContent(draftOffer.data)); setDraftOffer(null); }}>Restore</button>
+            <button className={btn} onClick={() => { localStorage.removeItem(DRAFT); setDraftOffer(null); }}>Discard</button>
+          </div>
+        )}
+        {conflict && (
+          <div className="mx-4 md:mx-6 mt-4 p-3 border border-red-400/50 bg-red-400/10 text-sm flex flex-wrap items-center gap-3 rounded-sm">
+            <span className="flex-1">The saved content changed since you opened the editor (another tab, device or a direct GitHub edit).</span>
+            <button className={btn} onClick={() => save(true)}>Overwrite with mine</button>
+            <button className={btn} onClick={() => { if (confirm('Reload the latest and lose your unsaved edits?')) { localStorage.removeItem(DRAFT); setConflict(false); load(); } }}>Reload latest</button>
+          </div>
+        )}
+
+        <div className={'flex-1 min-h-0 ' + (preview ? 'xl:grid xl:grid-cols-2' : '')}>
+          <div className="p-4 md:p-6 max-w-3xl w-full space-y-8">
+            {cur.blocks?.map((b) => (
+              <section key={b.title}>
+                <h3 className="font-heading font-bold mb-1">{b.title}</h3>
+                {b.note && <p className="text-xs text-[#ADB8BD] mb-3">{b.note}</p>}
+                <Field key={page + b.path} name={b.path.split('.').pop()!} v={getPath(data, b.path)} path={b.path} only={b.only} set={(x) => edit(b.path, x)} />
+              </section>
+            ))}
+            {page === 'sections' && <SectionsEditor sections={data.SECTIONS} setSections={(s) => edit('SECTIONS', s)} />}
+            {isTheme && <ThemeEditor group={page.slice(6)} theme={data.THEME} setTheme={(t) => edit('THEME', t)} />}
+            {page === 'storage' && <StoragePanel data={data} sha={sha} onLoadDraft={(c, note) => { update(() => c, false); setPage('hero'); flash(note, 'info', 9000); }} />}
+          </div>
+
+          {preview && (
+            <div className="hidden xl:flex flex-col border-l border-[#236477]/40 bg-[#0c262e] sticky top-[57px] h-[calc(100vh-57px)]">
+              <div className="flex items-center gap-2 p-2 border-b border-[#236477]/30 text-xs">
+                <span className="text-[#7DAFB9] flex-1">LIVE PREVIEW — shows unsaved edits</span>
+                {(['desktop', 'tablet', 'phone'] as const).map((d) => <button key={d} className={btn + (device === d ? ' !border-[#E8892B] !text-[#E8892B]' : '')} onClick={() => setDevice(d)}>{d}</button>)}
+              </div>
+              <div className="flex-1 overflow-auto flex justify-center p-2">
+                <iframe ref={frame} title="preview" src={BASE + '?preview=1'} onLoad={send} style={{ width, maxWidth: '100%' }} className="h-full bg-white border border-[#236477]/40 rounded-sm transition-all" />
+              </div>
+            </div>
+          )}
         </div>
       </main>
     </div>

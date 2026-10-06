@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, X, ArrowUpRight, FileDown } from 'lucide-react';
+import { PERSONAL_INFO, SECTIONS, SITE, THEME } from '../data/portfolioData';
 
 interface NavbarProps {
   onOpenResume: () => void;
@@ -8,147 +9,103 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({ onOpenResume }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState('hero');
+  const [activeSection, setActiveSection] = useState('');
+
+  // links follow the Sections settings (order, visibility, label) from the admin
+  const navLinks = SECTIONS.filter((s) => s.visible && s.nav.trim()).map((s) => ({ label: s.nav, href: '#' + s.id, id: s.id }));
+  const ids = navLinks.map((l) => l.id).join(',');
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 40);
-
-      const sections = ['profile', 'operations', 'experience', 'flow', 'skills', 'education', 'contact'];
-      for (const section of sections) {
-        const el = document.getElementById(section);
+      let current = '';
+      for (const id of ids.split(',').filter(Boolean)) {
+        const el = document.getElementById(id);
         if (el) {
           const rect = el.getBoundingClientRect();
-          if (rect.top <= 200 && rect.bottom >= 200) {
-            setActiveSection(section);
-            break;
-          }
+          if (rect.top <= 200 && rect.bottom >= 200) { current = id; break; }
         }
       }
+      setActiveSection(current);
     };
-
+    handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [ids]);
 
-  const navLinks = [
-    { label: 'PROFILE', href: '#profile', id: 'profile' },
-    { label: 'OPERATIONS', href: '#operations', id: 'operations' },
-    { label: 'EXPERIENCE', href: '#experience', id: 'experience' },
-    { label: 'FLOW', href: '#flow', id: 'flow' },
-    { label: 'SKILLS', href: '#skills', id: 'skills' },
-    { label: 'EDUCATION', href: '#education', id: 'education' },
-    { label: 'CONTACT', href: '#contact', id: 'contact' },
-  ];
+  const pad = Math.max(8, Number(THEME.navPadding) || 18);
+  const solid = isScrolled || mobileMenuOpen;
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled
-          ? 'bg-[#081F26]/95 backdrop-blur-md border-b border-[#236477]/40 shadow-lg py-3.5'
-          : 'bg-transparent py-5'
+      style={{ paddingTop: solid ? pad * 0.75 : pad, paddingBottom: solid ? pad * 0.75 : pad }}
+      className={`${THEME.navSticky ? 'fixed' : 'absolute'} top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        solid
+          ? `bg-[var(--c-bg)]/95 ${THEME.navBlur ? 'backdrop-blur-md' : ''} border-b border-[var(--c-border)]/40 shadow-lg`
+          : 'bg-transparent'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-6 md:px-12 flex items-center justify-between">
-        {/* Zone 1: Single text wordmark */}
-        <a
-          href="#"
-          className="text-lg md:text-xl font-extrabold tracking-wider text-white font-heading hover:text-[#7DAFB9] transition-colors flex items-center gap-2"
-        >
-          <span>BHARATH VENU</span>
-          <span className="w-1.5 h-1.5 rounded-full bg-[#E8892B]"></span>
+      <div className="max-w-[var(--content-w)] mx-auto px-6 md:px-12 flex items-center justify-between">
+        <a href="#top" className="text-lg md:text-xl font-extrabold tracking-wider text-[var(--c-white)] font-heading hover:text-[var(--c-light)] transition-colors flex items-center gap-2">
+          <span>{PERSONAL_INFO.name}</span>
+          <span className="w-1.5 h-1.5 rounded-full bg-[var(--c-accent)]"></span>
         </a>
 
-        {/* Zone 2: 4-6 clean text navigation links */}
         <nav className="hidden lg:flex items-center gap-7">
           {navLinks.map((link) => {
             const isActive = activeSection === link.id;
             return (
-              <a
-                key={link.label}
-                href={link.href}
-                className={`text-xs uppercase font-medium tracking-widest transition-colors py-1 relative ${
-                  isActive ? 'text-[#E8892B]' : 'text-[#ADB8BD] hover:text-white'
-                }`}
-              >
+              <a key={link.id} href={link.href} className={`text-xs uppercase font-medium tracking-widest transition-colors py-1 relative ${isActive ? 'text-[var(--c-accent)]' : 'text-[var(--c-muted)] hover:text-[var(--c-white)]'}`}>
                 {link.label}
-                {isActive && (
-                  <span className="absolute bottom-0 left-0 w-full h-[2px] bg-[#E8892B]" />
-                )}
+                {isActive && <span className="absolute bottom-0 left-0 w-full h-[2px] bg-[var(--c-accent)]" />}
               </a>
             );
           })}
         </nav>
 
-        {/* Zone 3: 1-2 primary actions */}
         <div className="hidden sm:flex items-center gap-4">
-          <button
-            onClick={onOpenResume}
-            className="flex items-center gap-2 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-white bg-[#063F4B] hover:bg-[#0B5260] border border-[#236477] transition-all hover:border-[#7DAFB9] whitespace-nowrap cursor-pointer"
-          >
-            <FileDown className="w-3.5 h-3.5 text-[#E8892B]" />
-            <span>Resume</span>
-          </button>
-          <a
-            href="#contact"
-            className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[#081F26] bg-[#F4F2EB] hover:bg-[#E8892B] hover:text-white transition-all whitespace-nowrap cursor-pointer"
-          >
-            <span>Connect</span>
+          {THEME.showResumeButton && (
+            <button onClick={onOpenResume} className="flex items-center gap-2 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[var(--c-white)] bg-[var(--c-primary)] hover:bg-[var(--c-secondary)] border border-[var(--c-border)] transition-all hover:border-[var(--c-light)] whitespace-nowrap cursor-pointer">
+              <FileDown className="w-3.5 h-3.5 text-[var(--c-accent)]" />
+              <span>{SITE.nav.resumeLabel}</span>
+            </button>
+          )}
+          <a href="#contact" className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[var(--c-ink-strong)] bg-[var(--c-paper)] hover:bg-[var(--c-accent)] hover:text-[var(--c-white)] transition-all whitespace-nowrap cursor-pointer">
+            <span>{SITE.nav.connectLabel}</span>
             <ArrowUpRight className="w-3.5 h-3.5" />
           </a>
         </div>
 
-        {/* Mobile menu trigger */}
         <div className="flex items-center gap-3 lg:hidden">
-          <button
-            onClick={onOpenResume}
-            className="p-2 text-white bg-[#063F4B] border border-[#236477] text-xs"
-            aria-label="View Resume"
-          >
-            <FileDown className="w-4 h-4 text-[#E8892B]" />
-          </button>
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 text-white hover:text-[#7DAFB9] focus:outline-none"
-            aria-label="Toggle navigation menu"
-          >
+          {THEME.showResumeButton && (
+            <button onClick={onOpenResume} className="p-2 text-[var(--c-white)] bg-[var(--c-primary)] border border-[var(--c-border)] text-xs" aria-label="View Resume">
+              <FileDown className="w-4 h-4 text-[var(--c-accent)]" />
+            </button>
+          )}
+          <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 text-[var(--c-white)] hover:text-[var(--c-light)] focus:outline-none" aria-label="Toggle navigation menu">
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
       </div>
 
-      {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-[#081F26] border-b border-[#236477] px-6 py-6 animate-fadeIn">
+        <div className="lg:hidden bg-[var(--c-bg)] border-b border-[var(--c-border)] px-6 py-6 animate-fadeIn">
           <div className="flex flex-col gap-4">
-            <span className="text-[10px] tracking-widest text-[#7DAFB9] uppercase">Navigation Index</span>
+            <span className="text-[10px] tracking-widest text-[var(--c-light)] uppercase">{SITE.nav.mobileIndexLabel}</span>
             {navLinks.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className="text-sm font-semibold tracking-wider text-[#F4F2EB] hover:text-[#E8892B] py-1 border-b border-[#102932] flex items-center justify-between"
-              >
+              <a key={link.id} href={link.href} onClick={() => setMobileMenuOpen(false)} className="text-sm font-semibold tracking-wider text-[var(--c-text)] hover:text-[var(--c-accent)] py-1 border-b border-[var(--c-surface)] flex items-center justify-between">
                 <span>{link.label}</span>
-                <span className="text-xs text-[#7DAFB9]">→</span>
+                <span className="text-xs text-[var(--c-light)]">→</span>
               </a>
             ))}
             <div className="pt-4 flex flex-col gap-3">
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  onOpenResume();
-                }}
-                className="w-full py-2.5 text-center text-xs uppercase font-semibold text-white bg-[#063F4B] border border-[#236477]"
-              >
-                Download Resume
-              </button>
-              <a
-                href="#contact"
-                onClick={() => setMobileMenuOpen(false)}
-                className="w-full py-2.5 text-center text-xs uppercase font-semibold text-[#081F26] bg-[#F4F2EB]"
-              >
-                Get In Touch
+              {THEME.showResumeButton && (
+                <button onClick={() => { setMobileMenuOpen(false); onOpenResume(); }} className="w-full py-2.5 text-center text-xs uppercase font-semibold text-[var(--c-white)] bg-[var(--c-primary)] border border-[var(--c-border)]">
+                  {SITE.nav.mobileResumeLabel}
+                </button>
+              )}
+              <a href="#contact" onClick={() => setMobileMenuOpen(false)} className="w-full py-2.5 text-center text-xs uppercase font-semibold text-[var(--c-ink-strong)] bg-[var(--c-paper)]">
+                {SITE.nav.mobileConnectLabel}
               </a>
             </div>
           </div>

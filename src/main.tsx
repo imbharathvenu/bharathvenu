@@ -1,6 +1,6 @@
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
-import { applyContent } from './data/portfolioData';
+import { bootContent, startLiveSync } from './data/runtime';
 import './index.css';
 
 const BASE: string = import.meta.env.BASE_URL || '/';
@@ -12,14 +12,8 @@ async function boot() {
     const { default: Admin } = await import('./admin/Admin');
     return root.render(<Admin />);
   }
-  // 1) server API (Vercel / Node host)  2) static content.json committed by the admin (GitHub Pages)
-  const sources = [
-    ...(location.hostname.endsWith('github.io') ? [] : ['/api/content']),
-    BASE + 'content.json?t=' + Date.now(),
-  ];
-  for (const u of sources) {
-    try { const r = await fetch(u); if (r.ok) { applyContent(await r.json()); break; } } catch { /* try next / bundled defaults */ }
-  }
+  await bootContent();   // instant from cache, or bundled defaults; fresh data is swapped in live
   root.render(<App />);
+  startLiveSync();       // keeps the page up to date without a reload
 }
 boot();

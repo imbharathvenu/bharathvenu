@@ -2,85 +2,74 @@
 
 @layer base {
   :root {
-    --color-deep-bg: #081F26;
-    --color-primary-teal: #063F4B;
-    --color-secondary-teal: #0B5260;
-    --color-deep-navy: #102932;
-    --color-industrial-blue: #236477;
-    --color-light-accent: #7DAFB9;
-    --color-safety-orange: #E8892B;
-    --color-warm-white: #F4F2EB;
-    --color-clean-white: #FFFFFF;
-    --color-muted-grey: #ADB8BD;
+    --c-bg: #081F26; --c-primary: #063F4B; --c-secondary: #0B5260; --c-surface: #102932; --c-border: #236477;
+    --c-light: #7DAFB9; --c-accent: #E8892B; --c-paper: #F4F2EB; --c-text: #F4F2EB; --c-white: #FFFFFF;
+    --c-muted: #ADB8BD; --c-ink: #102932; --c-ink-strong: #081F26; --c-card: #FFFFFF; --c-footer: #041217;
+    --font-heading: 'Sora', 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --content-w: 1280px; --sec-py: 6rem; --radius: 0px; --anim-speed: 6s; --grid-a: 5;
+    --img-contrast: 105%; --img-bright: 92%; --img-sat: 100%; --img-gray: 0%; --sb-w: 7px; --banner-overlay: .8;
   }
-
   body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background-color: var(--color-deep-bg);
-    color: var(--color-warm-white);
+    font-family: var(--font-sans);
+    background-color: var(--c-bg);
+    color: var(--c-text);
     overflow-x: hidden;
   }
-
   h1, h2, h3, h4, h5, h6, .font-heading {
-    font-family: 'Sora', 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: var(--font-heading);
     letter-spacing: -0.02em;
   }
 }
 
-/* Subtle Industrial Grid & Motion */
 .warehouse-grid {
   background-size: 40px 40px;
-  background-image: 
-    linear-gradient(to right, rgba(125, 175, 185, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(125, 175, 185, 0.05) 1px, transparent 1px);
+  background-image:
+    linear-gradient(to right, color-mix(in srgb, var(--c-light) calc(var(--grid-a) * 1%), transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--c-light) calc(var(--grid-a) * 1%), transparent) 1px, transparent 1px);
 }
-
 .warehouse-grid-subtle {
   background-size: 60px 60px;
-  background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-image:
+    linear-gradient(to right, color-mix(in srgb, var(--c-white) calc(var(--grid-a) * .6%), transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--c-white) calc(var(--grid-a) * .6%), transparent) 1px, transparent 1px);
 }
 
-@keyframes pulse-subtle {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 0.8; }
+@keyframes cargo-travel { 0% { transform: translateX(0%); } 100% { transform: translateX(100%); } }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.animate-cargo-node { animation: cargo-travel var(--anim-speed) cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+.animate-fadeIn { animation: fadeIn .3s ease-out both; }
+
+/* scroll reveal */
+.reveal { opacity: 0; transform: translateY(28px); transition: opacity .7s ease, transform .7s ease; }
+.reveal.in { opacity: 1; transform: none; }
+html[data-no-reveal] .reveal { opacity: 1; transform: none; transition: none; }
+@media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } }
+
+/* scrollbar */
+::-webkit-scrollbar { width: var(--sb-w); height: var(--sb-w); }
+::-webkit-scrollbar-track { background: var(--c-bg); }
+::-webkit-scrollbar-thumb { background: var(--c-border); border-radius: 0; }
+::-webkit-scrollbar-thumb:hover { background: var(--c-accent); }
+html[data-round-sb] ::-webkit-scrollbar-thumb { border-radius: 999px; }
+
+/* ---- theme switches (set by applyTheme) ---- */
+html[data-no-motion] *, html[data-no-motion] *::before { animation: none !important; transition: none !important; }
+html[data-no-grid] .warehouse-grid, html[data-no-grid] .warehouse-grid-subtle { display: none; }
+html[data-no-zoom] img { scale: none !important; transform: none !important; }
+html[data-no-numbers] .num { display: none; }
+html[data-imgfx] main img {
+  filter: contrast(var(--img-contrast)) brightness(var(--img-bright)) saturate(var(--img-sat)) grayscale(var(--img-gray)) !important;
+}
+html[data-hw] :is(h1, h2, h3, h4, .font-heading) { font-weight: var(--h-weight) !important; }
+html[data-ht] :is(h1, h2, h3, h4, .font-heading) { letter-spacing: var(--h-track) !important; }
+html[data-hc] :is(h1, h2, h3, h4, .font-heading) { text-transform: var(--h-case) !important; }
+body :is(button, input, select, textarea, img, a[class*="px-"], div[class*="border border-"], div[class*="shadow"]):not(.rounded-full):not([class*="border-t-2"]):not([class*="border-b-2"]) {
+  border-radius: var(--radius);
 }
 
-@keyframes cargo-travel {
-  0% { transform: translateX(0%); }
-  100% { transform: translateX(100%); }
-}
-
-.animate-cargo-node {
-  animation: cargo-travel 6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-}
-
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 7px;
-}
-::-webkit-scrollbar-track {
-  background: #081F26;
-}
-::-webkit-scrollbar-thumb {
-  background: #236477;
-  border-radius: 0px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #E8892B;
-}
-
-/* Print styling for resume */
 @media print {
-  body {
-    background: #FFFFFF !important;
-    color: #102932 !important;
-  }
-  .no-print {
-    display: none !important;
-  }
-  .print-only {
-    display: block !important;
-  }
+  body { background: #FFFFFF !important; color: #102932 !important; }
+  .no-print { display: none !important; }
+  .print-only { display: block !important; }
 }
