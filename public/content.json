@@ -1,6 +1,6 @@
 {
   "PERSONAL_INFO": {
-    "name": "B V",
+    "name": "Bharath Venu",
     "title": "Warehouse Supervisor | Logistics & Supply Chain Operations",
     "tagline": "Warehouse operations, inventory control, inbound–outbound coordination and team supervision.",
     "phone": "+919400252637",
@@ -264,6 +264,50 @@
       "supervisorCheckpoint": "Final seal application & dispatch system update"
     }
   ],
+  "SKILL_GRID": [
+    {
+      "name": "SAP ERP",
+      "type": "Systems",
+      "icon": "Database",
+      "featured": true
+    },
+    {
+      "name": "Inventory Control",
+      "type": "Core",
+      "icon": "Layers"
+    },
+    {
+      "name": "FIFO / FEFO",
+      "type": "Method",
+      "icon": "Clock"
+    },
+    {
+      "name": "Inbound & Outbound",
+      "type": "Operations",
+      "icon": "Truck"
+    },
+    {
+      "name": "Dispatch Documentation",
+      "type": "Compliance",
+      "icon": "FileSpreadsheet"
+    },
+    {
+      "name": "Safety & 5S",
+      "type": "Safety",
+      "icon": "ShieldCheck",
+      "featured": true
+    },
+    {
+      "name": "Team Supervision",
+      "type": "Leadership",
+      "icon": "Users"
+    },
+    {
+      "name": "Stock Reconciliation",
+      "type": "Control",
+      "icon": "ClipboardCheck"
+    }
+  ],
   "SKILL_CATEGORIES": [
     {
       "category": "SYSTEMS & DOCUMENTATION",
@@ -506,5 +550,334 @@
       "span": "col-span-1 md:col-span-2 row-span-1",
       "caption": "Time-critical air cargo pallets staged for freighter tarmac loading."
     }
-  ]
+  ],
+  "SITE": {
+    "hero": {
+      "kicker": "Logistics & Supply Chain Operations",
+      "hubLabel": "HUB",
+      "primaryButton": "View Experience",
+      "resumeButton": "View Resume",
+      "imageAlt": "Warehouse operations",
+      "cardSector": "SECTOR · WAREHOUSING",
+      "cardStatus": "ACTIVE",
+      "cardTitle": "Inbound · Storage · Dispatch",
+      "cardTagOne": "Inventory Control",
+      "cardTagTwo": "Safety Compliance",
+      "metrics": [
+        {
+          "label": "Focus",
+          "value": "Warehouse Ops",
+          "highlight": false
+        },
+        {
+          "label": "Sectors",
+          "value": "FMCG · LPG",
+          "highlight": false
+        },
+        {
+          "label": "Status",
+          "value": "Open to Roles",
+          "highlight": true
+        }
+      ]
+    },
+    "nav": {
+      "resumeLabel": "Resume",
+      "connectLabel": "Connect",
+      "mobileIndexLabel": "INDEX",
+      "mobileResumeLabel": "View Resume",
+      "mobileConnectLabel": "Connect"
+    },
+    "strip": {
+      "label": "SEA · LAND · AIR",
+      "sublabel": "MULTI-MODAL FREIGHT UNDERSTANDING",
+      "panels": [
+        {
+          "mode": "SEA FREIGHT",
+          "label": "Sea Cargo",
+          "sub": "Container handling, port-side coordination and shipping documentation.",
+          "image": "images/sea_cargo_vessel_1791224631554.jpg",
+          "icon": "Anchor"
+        },
+        {
+          "mode": "LAND FREIGHT",
+          "label": "Land Transport",
+          "sub": "Fleet staging, dock scheduling and inter-state transport coordination.",
+          "image": "images/land_freight_terminal_1791224641369.jpg",
+          "icon": "Truck"
+        },
+        {
+          "mode": "AIR CARGO",
+          "label": "Air Freight",
+          "sub": "Time-critical dispatch, handling discipline and documentation accuracy.",
+          "image": "images/air_cargo_freighter_1791224651845.jpg",
+          "icon": "Plane"
+        }
+      ]
+    },
+    "profile": {
+      "kicker": "Professional Profile",
+      "title": "Operations\nBuilt on\nDiscipline",
+      "body": "Hands-on in the warehouse and on the dock: keeping inbound and outbound flowing, stock accurate, teams coordinated and every shift safe.",
+      "tagsLabel": "Domain Expertise",
+      "stats": [
+        {
+          "value": "3",
+          "label": "Organisations"
+        },
+        {
+          "value": "8",
+          "label": "Core Focus Areas"
+        }
+      ],
+      "pillars": [
+        {
+          "icon": "ShieldCheck",
+          "title": "Safety First",
+          "text": "SOP-driven, compliance-focused operations."
+        },
+        {
+          "icon": "Package",
+          "title": "Inventory Accuracy",
+          "text": "FIFO / FEFO discipline and stock reconciliation."
+        },
+        {
+          "icon": "Users",
+          "title": "Team Leadership",
+          "text": "Manpower allocation and shift supervision."
+        }
+      ]
+    },
+    "operations": {
+      "kicker": "Core Capabilities",
+      "title": "Areas of Expertise",
+      "desc": "Select a card to see the scope of work and operating standards behind each area.",
+      "expandLabel": "View scope",
+      "modalKicker": "CAPABILITY DETAIL",
+      "checklistLabel": "Scope of work",
+      "benchmarkLabel": "Benchmark:",
+      "closeLabel": "Close"
+    },
+    "experience": {
+      "kicker": "Career Timeline",
+      "title": "Professional Experience",
+      "desc": "Supervisory roles across retail warehousing and LPG distribution.",
+      "safetyBadge": "Safety-critical",
+      "currentBadge": "Current posting",
+      "progressionLabel": "Progression",
+      "listLabel": "Key responsibilities",
+      "imageNote": "SITE",
+      "imageBadge": "ON-SITE"
+    },
+    "flow": {
+      "kicker": "Standard Operating Procedure",
+      "title": "Operational\nFlow",
+      "desc": "Step through the inbound-to-dispatch cycle and the checkpoints a supervisor owns at each stage.",
+      "hint": "Select a stage",
+      "sopLabel": "Standard procedure",
+      "actionLabel": "Key action",
+      "signoffLabel": "Supervisor checkpoint",
+      "protocolLabel": "PROTOCOL",
+      "protocolValue": "SOP-COMPLIANT",
+      "prevLabel": "Previous",
+      "nextLabel": "Next"
+    },
+    "banner": {
+      "image": "",
+      "kicker": "OPERATING PRINCIPLE",
+      "title": "Precision.\nSafety.\nDelivery.",
+      "text": "Every pallet counted, every dispatch documented, every shift finished safely.",
+      "footLeft": "FIFO / FEFO",
+      "footRight": "ZERO-COMPROMISE SAFETY"
+    },
+    "skills": {
+      "kicker": "Capabilities",
+      "title": "Skills & Systems",
+      "desc": "Tools, methods and leadership skills used on the warehouse floor every day."
+    },
+    "education": {
+      "kicker": "Education",
+      "title": "Education & Qualifications",
+      "desc": "Academic foundation in business and operations management.",
+      "scoreLabel": "Score:"
+    },
+    "leadership": {
+      "kicker": "Beyond The Warehouse",
+      "title": "Leadership & Languages",
+      "desc": "Discipline, endurance and teamwork built through sport and cadet training.",
+      "attributesLabel": "Attributes",
+      "languagesLabel": "LANGUAGES"
+    },
+    "career": {
+      "kicker": "Career Focus",
+      "title": "Target\nRoles\nOpen to Work",
+      "desc": "Positions in warehouse, terminal and logistics operations."
+    },
+    "gallery": {
+      "kicker": "Operations Gallery",
+      "title": "Operations Gallery",
+      "allLabel": "ALL",
+      "inspectLabel": "Inspect",
+      "categoryLabel": "CATEGORY:",
+      "closeLabel": "Close"
+    },
+    "contact": {
+      "kicker": "Get In Touch",
+      "title": "Let's Build\nBetter Operations",
+      "intro": "Open to warehouse, terminal and logistics operations roles. Send a message and I will get back to you.",
+      "phoneLabel": "Phone",
+      "emailLabel": "Email",
+      "linkedinLabel": "LinkedIn",
+      "locationLabel": "Location",
+      "locationBadge": "AVAILABLE",
+      "mailSubject": "Opportunity enquiry — Bharath Venu",
+      "primaryButton": "Send Email",
+      "resumeButton": "View Resume",
+      "formTitle": "Enquiry Form",
+      "formStatus": "OPEN",
+      "successTitle": "Message Ready",
+      "successText": "Thank you. Your message has been prepared and will reach me shortly.",
+      "againLabel": "Send another message",
+      "nameLabel": "Your name",
+      "namePlaceholder": "Full name",
+      "orgLabel": "Organisation",
+      "orgPlaceholder": "Company name",
+      "emailFieldLabel": "Your email",
+      "emailPlaceholder": "name@company.com",
+      "roleLabel": "Role of interest",
+      "messageLabel": "Message",
+      "messagePlaceholder": "Tell me about the opportunity…",
+      "submitLabel": "Send Message",
+      "formEndpoint": ""
+    },
+    "footer": {
+      "base": "Based in Trivandrum, Kerala",
+      "rights": "All rights reserved.",
+      "topLabel": "Back to top",
+      "cvLabel": "View CV"
+    },
+    "resume": {
+      "barLabel": "CURRICULUM VITAE —",
+      "printLabel": "Print / Save PDF",
+      "summaryHeading": "Professional Summary",
+      "expertiseHeading": "Core Expertise",
+      "experienceHeading": "Experience",
+      "educationHeading": "Education",
+      "leadershipHeading": "Leadership & Achievements",
+      "languagesHeading": "Languages",
+      "extraTags": []
+    }
+  },
+  "SECTIONS": [
+    {
+      "id": "strip",
+      "visible": true,
+      "nav": ""
+    },
+    {
+      "id": "profile",
+      "visible": true,
+      "nav": "PROFILE"
+    },
+    {
+      "id": "operations",
+      "visible": true,
+      "nav": "EXPERTISE"
+    },
+    {
+      "id": "experience",
+      "visible": true,
+      "nav": "EXPERIENCE"
+    },
+    {
+      "id": "flow",
+      "visible": true,
+      "nav": "WORKFLOW"
+    },
+    {
+      "id": "banner",
+      "visible": true,
+      "nav": ""
+    },
+    {
+      "id": "skills",
+      "visible": true,
+      "nav": "SKILLS"
+    },
+    {
+      "id": "education",
+      "visible": true,
+      "nav": "EDUCATION"
+    },
+    {
+      "id": "leadership",
+      "visible": true,
+      "nav": "LEADERSHIP"
+    },
+    {
+      "id": "career",
+      "visible": true,
+      "nav": ""
+    },
+    {
+      "id": "gallery",
+      "visible": true,
+      "nav": "GALLERY"
+    },
+    {
+      "id": "contact",
+      "visible": true,
+      "nav": "CONTACT"
+    }
+  ],
+  "THEME": {
+    "preset": "burgundy-night",
+    "bg": "#1E0E16",
+    "primary": "#401A2B",
+    "secondary": "#58263C",
+    "surface": "#2A1420",
+    "border": "#7A3B55",
+    "light": "#D3A3B7",
+    "accent": "#E8A33D",
+    "paper": "#F6F1EE",
+    "text": "#F6F1EE",
+    "white": "#FFFFFF",
+    "muted": "#C3AEB7",
+    "ink": "#2A1420",
+    "inkStrong": "#1E0E16",
+    "card": "#FFFFFF",
+    "footer": "#12070D",
+    "headingFont": "Sora",
+    "bodyFont": "Inter",
+    "monoFont": "System monospace",
+    "headingWeight": "Default",
+    "headingTracking": "Default",
+    "headingCase": "Default",
+    "contentWidth": 1280,
+    "sectionPadding": 6,
+    "radius": 0,
+    "navPadding": 18,
+    "navSticky": true,
+    "navBlur": true,
+    "heroImage": "right",
+    "showResumeButton": true,
+    "showContactForm": true,
+    "backToTop": true,
+    "scrollProgress": true,
+    "scrollbarWidth": 7,
+    "roundScrollbar": false,
+    "animSpeed": 6,
+    "gridStrength": 5,
+    "reveal": true,
+    "motion": true,
+    "grid": true,
+    "imageZoom": true,
+    "sectionNumbers": true,
+    "imageEffects": false,
+    "imgContrast": 105,
+    "imgBright": 92,
+    "imgSat": 100,
+    "imgGray": 0,
+    "bannerOverlay": 0.8
+  }
 }
