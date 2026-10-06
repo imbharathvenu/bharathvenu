@@ -1,8 +1,47 @@
 import { useEffect, useState } from 'react';
+import * as D from '../data/portfolioData';
 
 type J = any;
 const T = 'bv_admin_token';
+const defaults = (): J => JSON.parse(JSON.stringify(Object.fromEntries(D.CONTENT_KEYS.map((k) => [k, (D as any)[k]]))));
 const hdr = (extra: Record<string, string> = {}) => ({ ...extra, Authorization: 'Bearer ' + (localStorage.getItem(T) || '') });
+
+// ---- GitHub Pages mode: no server, the admin edits files in the repo directly via the GitHub API ----
+const STATIC = location.hostname.endsWith('github.io') || new URLSearchParams(location.search).has('static');
+const BASE: string = (import.meta as any).env?.BASE_URL ?? '/';
+const GT = 'bv_gh_token', GR = 'bv_gh_repo';
+const CONTENT = 'public/content.json';
+const guessRepo = () => {
+  const u = location.hostname.split('.')[0]; const r = location.pathname.split('/')[1];
+  return r && r !== 'admin' ? `${u}/${r}` : `${u}/${u}.github.io`;
+};
+const ghApi = (path: string, init: RequestInit = {}) =>
+  fetch(`https://api.github.com/repos/${localStorage.getItem(GR)}/contents/${path}`, {
+    ...init,
+    headers: { Accept: 'application/vnd.github+json', Authorization: 'Bearer ' + localStorage.getItem(GT), ...((init.headers as any) || {}) },
+  });
+const toB64 = (s: string) => btoa(unescape(encodeURIComponent(s)));
+const fromB64 = (s: string) => decodeURIComponent(escape(atob(s.replace(/\n/g, ''))));
+const fileB64 = (f: File) => new Promise<string>((res, rej) => {
+  const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1]); r.onerror = rej; r.readAsDataURL(f);
+});
+async function ghGet(path: string) {
+  const r = await ghApi(path);
+  if (r.status === 404) return null;
+  if (!r.ok) throw Object.assign(new Error('GitHub ' + r.status), { status: r.status });
+  return r.json();
+}
+async function ghPut(path: string, content: string, message: string) {
+  const ex = await ghGet(path);
+  const r = await ghApi(path, { method: 'PUT', body: JSON.stringify({ message, content, ...(ex ? { sha: ex.sha } : {}) }) });
+  if (!r.ok) throw Object.assign(new Error('GitHub ' + r.status), { status: r.status });
+}
+async function ghDelete(path: string, message: string) {
+  const ex = await ghGet(path); if (!ex) return;
+  const r = await ghApi(path, { method: 'DELETE', body: JSON.stringify({ message, sha: ex.sha }) });
+  if (!r.ok) throw Object.assign(new Error('GitHub ' + r.status), { status: r.status });
+}
+const clearAuth = () => { localStorage.removeItem(T); localStorage.removeItem(GT); };
 
 const LABELS: Record<string, string> = {
   PERSONAL_INFO: 'Personal & Contact', PROFILE_TAGS: 'Profile Tags', IMAGES: 'Core Images',
@@ -28,9 +67,19 @@ function Upload({ onDone }: { onDone: (url: string) => void }) {
       <input type="file" accept="image/*" hidden onChange={async (e) => {
         const f = e.target.files?.[0]; if (!f) return;
         setBusy(true);
+        if (STATIC) {
+          try {
+            const ext = ({ 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif', 'image/svg+xml': 'svg' } as any)[f.type];
+            if (!ext || f.size > 10 * 1024 * 1024) throw new Error('bad');
+            const name = `${Date.now()}-${Math.random().toString(16).slice(2, 8)}.${ext}`;
+            await ghPut(`public/uploads/${name}`, await fileB64(f), 'Admin: upload image');
+            onDone(BASE + 'uploads/' + name);
+          } catch { alert('Upload failed (max 10 MB, JPG/PNG/WEBP/GIF/SVG, and check your token)'); }
+          setBusy(false); return;
+        }
         const r = await fetch('/api/upload', { method: 'POST', headers: hdr({ 'Content-Type': f.type }), body: f });
         setBusy(false);
-        r.ok ? onDone((await r.json()).url) : alert('Upload failed (max 15 MB, JPG/PNG/WEBP/GIF/SVG)');
+        r.ok ? onDone((await r.json()).url) : alert('Upload failed (max 4 MB, JPG/PNG/WEBP/GIF/SVG)');
       }} />
     </label>
   );
@@ -89,7 +138,8 @@ function Field({ name, v, set, path }: { name: string; v: J; set: (x: J) => void
 }
 
 export default function Admin() {
-  const [authed, setAuthed] = useState(!!localStorage.getItem(T));
+  const [authed, setAuthed] = useState(!!localStorage.getItem(STATIC ? GT : T));
+  const [repo, setRepo] = useState(localStorage.getItem(GR) || guessRepo());
   const [pw, setPw] = useState('');
   const [err, setErr] = useState('');
   const [data, setData] = useState<J>(null);
@@ -99,7 +149,13 @@ export default function Admin() {
 
   useEffect(() => {
     if (!authed) return;
-    fetch('/api/content').then((r) => r.json()).then((d) => { setData(d); setTab(Object.keys(d)[0]); });
+    const done = (d: J) => { setData(d); setTab(Object.keys(d)[0]); };
+    if (STATIC) {
+      ghGet(CONTENT).then((j) => done(j ? JSON.parse(fromB64(j.content)) : defaults()))
+        .catch((e) => { if (e.status === 401 || e.status === 403) { clearAuth(); setAuthed(false); } else done(defaults()); });
+      return;
+    }
+    fetch('/api/content').then((r) => (r.ok ? r.json() : defaults())).catch(() => defaults()).then(done);
   }, [authed]);
   useEffect(() => {
     const h = (e: BeforeUnloadEvent) => dirty && e.preventDefault();
@@ -107,19 +163,36 @@ export default function Admin() {
   }, [dirty]);
 
   const login = async () => {
+    if (STATIC) {
+      localStorage.setItem(GR, repo.trim()); localStorage.setItem(GT, pw.trim());
+      const r = await fetch(`https://api.github.com/repos/${repo.trim()}`, { headers: { Authorization: 'Bearer ' + pw.trim() } });
+      if (!r.ok) { localStorage.removeItem(GT); return setErr('Token or repository name is wrong'); }
+      return setAuthed(true);
+    }
     const r = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pw }) });
     if (!r.ok) return setErr('Incorrect password');
     localStorage.setItem(T, (await r.json()).token); setAuthed(true);
   };
   const save = async () => {
+    if (STATIC) {
+      try {
+        await ghPut(CONTENT, toB64(JSON.stringify(data, null, 2)), 'Admin: update content');
+        setDirty(false); setMsg('Saved — site rebuilds, live in ~1–2 min');
+      } catch (e: any) {
+        if (e.status === 401) { clearAuth(); return setAuthed(false); }
+        setMsg('Save failed (' + (e.message || 'error') + ')');
+      }
+      return void setTimeout(() => setMsg(''), 5000);
+    }
     const r = await fetch('/api/content', { method: 'PUT', headers: hdr({ 'Content-Type': 'application/json' }), body: JSON.stringify(data) });
-    if (r.status === 401) { localStorage.removeItem(T); return setAuthed(false); }
-    setDirty(false); setMsg(r.ok ? 'Saved — live on the site' : 'Save failed'); setTimeout(() => setMsg(''), 3000);
+    if (r.status === 401) { clearAuth(); return setAuthed(false); }
+    setDirty(false); setMsg(r.ok ? 'Saved — live in ~30 seconds' : 'Save failed'); setTimeout(() => setMsg(''), 3000);
   };
   const reset = async () => {
     if (!confirm('Reset ALL content to the original defaults? This cannot be undone.')) return;
+    if (STATIC) { try { await ghDelete(CONTENT, 'Admin: reset content to defaults'); setData(defaults()); setDirty(false); } catch { alert('Reset failed'); } return; }
     const r = await fetch('/api/content/reset', { method: 'POST', headers: hdr() });
-    if (r.ok) { setData(await r.json()); setDirty(false); }
+    if (r.ok) { setData(defaults()); setDirty(false); }
   };
 
   if (!authed)
@@ -128,7 +201,8 @@ export default function Admin() {
         <div className="w-full max-w-sm border border-[#236477]/60 bg-[#102932] p-8 space-y-4">
           <div className="text-[10px] tracking-[0.3em] text-[#E8892B]">BV / CONTENT ADMIN</div>
           <h1 className="font-heading text-2xl font-bold">Sign in</h1>
-          <input type="password" className={inp} placeholder="Admin password" value={pw} autoFocus
+          {STATIC && <input className={inp} placeholder="GitHub repo (user/repo)" value={repo} onChange={(e) => setRepo(e.target.value)} />}
+          <input type="password" className={inp} placeholder={STATIC ? 'GitHub token (github_pat_…)' : 'Admin password'} value={pw} autoFocus
             onChange={(e) => setPw(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && login()} />
           {err && <div className="text-red-400 text-sm">{err}</div>}
           <button className={btn + ' w-full !py-3'} onClick={login}>Enter</button>
@@ -152,7 +226,7 @@ export default function Admin() {
         <div className="hidden md:block mt-6 space-y-2">
           <a href="/" target="_blank" className={btn + ' block text-center'}>View site ↗</a>
           <button className={btn + ' w-full'} onClick={reset}>Reset defaults</button>
-          <button className={btn + ' w-full'} onClick={() => { localStorage.removeItem(T); setAuthed(false); }}>Log out</button>
+          <button className={btn + ' w-full'} onClick={() => { clearAuth(); setAuthed(false); }}>Log out</button>
         </div>
       </aside>
       <main className="flex-1 min-w-0">
