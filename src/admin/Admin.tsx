@@ -10,7 +10,9 @@ const hdr = (extra: Record<string, string> = {}) => ({ ...extra, Authorization: 
 const STATIC = location.hostname.endsWith('github.io') || new URLSearchParams(location.search).has('static');
 const BASE: string = (import.meta as any).env?.BASE_URL ?? '/';
 const GA = 'bv_api_url';
-const API = () => (STATIC ? localStorage.getItem(GA) || '' : '');
+// Default guess for the Vercel address: https://<repo-name>.vercel.app (change here if yours differs)
+const GUESS = 'https://' + (location.pathname.split('/')[1] || '').replace(/^admin$/, '') + '.vercel.app';
+const API = () => (STATIC ? localStorage.getItem(GA) || GUESS : '');
 const clearAuth = () => localStorage.removeItem(T);
 
 const LABELS: Record<string, string> = {
@@ -98,8 +100,9 @@ function Field({ name, v, set, path }: { name: string; v: J; set: (x: J) => void
 }
 
 export default function Admin() {
-  const [authed, setAuthed] = useState(!!localStorage.getItem(T) && (!STATIC || !!API()));
+  const [authed, setAuthed] = useState(!!localStorage.getItem(T));
   const [site, setSite] = useState(localStorage.getItem(GA) || '');
+  const [askSite, setAskSite] = useState(false);
   const [pw, setPw] = useState('');
   const [err, setErr] = useState('');
   const [data, setData] = useState<J>(null);
@@ -118,15 +121,15 @@ export default function Admin() {
   }, [dirty]);
 
   const login = async () => {
-    if (STATIC) {
+    if (STATIC && site.trim()) {
       let u = site.trim().replace(/\/+$/, '').replace(/\/admin$/, '');
-      if (!u) return setErr('Enter your Vercel site address');
       if (!/^https?:\/\//.test(u)) u = 'https://' + u;
       localStorage.setItem(GA, u);
     }
     let r: Response;
     try { r = await fetch(API() + '/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pw }) }); }
-    catch { return setErr('Cannot reach the Vercel site — check the address'); }
+    catch { setAskSite(true); return setErr('Could not reach your Vercel site — enter its address below'); }
+    if (r.status === 404 || r.status === 405) { setAskSite(true); return setErr('Could not find your Vercel site — enter its address below'); }
     if (!r.ok) return setErr('Incorrect password');
     localStorage.setItem(T, (await r.json()).token); setAuthed(true);
   };
@@ -147,7 +150,7 @@ export default function Admin() {
         <div className="w-full max-w-sm border border-[#236477]/60 bg-[#102932] p-8 space-y-4">
           <div className="text-[10px] tracking-[0.3em] text-[#E8892B]">BV / CONTENT ADMIN</div>
           <h1 className="font-heading text-2xl font-bold">Sign in</h1>
-          {STATIC && <input className={inp} placeholder="Vercel site address (e.g. bharathvenu.vercel.app)" value={site} onChange={(e) => setSite(e.target.value)} />}
+          {STATIC && askSite && <input className={inp} placeholder="Vercel site address (e.g. bharathvenu.vercel.app)" value={site} onChange={(e) => setSite(e.target.value)} />}
           <input type="password" className={inp} placeholder="Admin password" value={pw} autoFocus
             onChange={(e) => setPw(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && login()} />
           {err && <div className="text-red-400 text-sm">{err}</div>}
