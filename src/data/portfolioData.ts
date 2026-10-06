@@ -1,437 +1,143 @@
-import { CapabilityArea, EducationItem, ExperienceItem, FlowStep, GalleryItem, LeadershipItem } from '../types';
+import bundled from './defaultContent.json';
+import { DEFAULT_SECTIONS, DEFAULT_SITE, DEFAULT_SKILL_GRID, SECTION_META } from './siteDefaults';
+import { DEFAULT_THEME, applyTheme, normalizeTheme, type Theme } from './theme';
+import type {
+  CapabilityArea, EducationItem, ExperienceItem, FlowStep, GalleryItem, LanguageItem, LeadershipItem,
+  PersonalInfo, SectionConfig, SiteContent, SkillCategory, SkillTile,
+} from '../types';
 
-const B: string = (import.meta as any).env?.BASE_URL ?? '/';
+export { SECTION_META };
 
-export const PERSONAL_INFO = {
-  name: 'BHARATH VENU',
-  title: 'Warehouse Supervisor | Logistics & Supply Chain Operations',
-  tagline: 'Warehouse operations, inventory control, inbound–outbound coordination and team supervision.',
-  phone: '+91 9400252637',
-  email: 'bharathvenu3@gmail.com',
-  linkedin: 'https://linkedin.com/in/bharath-venu-b29635365',
-  linkedinDisplay: 'linkedin.com/in/bharath-venu-b29635365',
-  location: 'Trivandrum, Kerala, India',
-  hubCoordinates: '8.5241° N, 76.9366° E',
-  summary:
-    'Logistics professional with supervisory experience in warehouse operations and LPG distribution management. Experienced in team supervision, inbound and outbound coordination, inventory control, documentation, dispatch management and operational safety.',
+export type Content = {
+  PERSONAL_INFO: PersonalInfo;
+  PROFILE_TAGS: string[];
+  IMAGES: Record<string, string>;
+  CAPABILITIES_BOARD: CapabilityArea[];
+  EXPERIENCES: ExperienceItem[];
+  FLOW_STEPS: FlowStep[];
+  SKILL_GRID: SkillTile[];
+  SKILL_CATEGORIES: SkillCategory[];
+  EDUCATION: EducationItem[];
+  LEADERSHIP: LeadershipItem[];
+  LANGUAGES: LanguageItem[];
+  CAREER_TARGETS: string[];
+  GALLERY_ITEMS: GalleryItem[];
+  SITE: SiteContent;
+  SECTIONS: SectionConfig[];
+  THEME: Theme;
 };
 
-export const PROFILE_TAGS = [
-  'WAREHOUSE OPERATIONS',
-  'INVENTORY CONTROL',
-  'FIFO / FEFO',
-  'INBOUND',
-  'OUTBOUND',
-  'SAFETY',
-  'TEAM SUPERVISION',
-];
-
-export const IMAGES = {
-  hero: B + 'images/hero_warehouse_ops_1791224619571.jpg',
-  sea: B + 'images/sea_cargo_vessel_1791224631554.jpg',
-  land: B + 'images/land_freight_terminal_1791224641369.jpg',
-  air: B + 'images/air_cargo_freighter_1791224651845.jpg',
-  forklift: B + 'images/ops_forklift_racks_1791224664597.jpg',
-  safetyDepot: B + 'images/safety_industrial_depot_1791224676939.jpg',
+/** Gallery tile sizes offered in the admin (name -> Tailwind grid classes). */
+export const GALLERY_SIZES: Record<string, string> = {
+  'Large (2×2)': 'col-span-1 md:col-span-2 row-span-2',
+  'Wide (2×1)': 'col-span-1 md:col-span-2 row-span-1',
+  'Tall (1×2)': 'col-span-1 row-span-1 md:row-span-2',
+  'Small (1×1)': 'col-span-1 row-span-1',
 };
 
-export const CAPABILITIES_BOARD: CapabilityArea[] = [
-  {
-    id: 'warehouse-ops',
-    title: 'WAREHOUSE OPERATIONS',
-    shortDesc: 'High-density vertical storage, dynamic aisle traffic management, and bay layout optimization.',
-    detailedScope: [
-      'Multi-tier pallet racking management and weight capacity governance',
-      'Daily equipment inspection (forklifts, stackers, hand pallet trucks)',
-      'Aisle throughput optimization and bottleneck elimination',
-      'End-of-day dock closure protocols and facility security compliance'
-    ],
-    image: IMAGES.hero,
-    metrics: '99.4% Space Utilization'
-  },
-  {
-    id: 'inventory-control',
-    title: 'INVENTORY CONTROL',
-    shortDesc: 'Systematic stock tracking, cycle counting, discrepancy auditing, and inventory variance control.',
-    detailedScope: [
-      'Perpetual cycle counts against physical inventory registers',
-      'Fast-moving vs. slow-moving stock re-slotting',
-      'Barcode validation and serial number tracking',
-      'Root-cause investigations for shrinkage and damaged stock'
-    ],
-    image: IMAGES.forklift,
-    metrics: '99.8% Record Accuracy'
-  },
-  {
-    id: 'inbound-logistics',
-    title: 'INBOUND LOGISTICS',
-    shortDesc: 'Receipt validation, advance shipment notice (ASN) matching, and structured put-away staging.',
-    detailedScope: [
-      'Dock scheduling and trailer unloading coordination',
-      'Damage inspection and packing slip / PO verification',
-      'Quarantine area segregation for non-conforming freight',
-      'Rapid transfer from receiving staging to designated bin locations'
-    ],
-    image: IMAGES.land,
-    metrics: '< 45 min Dock Turnaround'
-  },
-  {
-    id: 'outbound-logistics',
-    title: 'OUTBOUND LOGISTICS',
-    shortDesc: 'Pick-wave sequencing, marshaling area consolidation, and departure scheduling.',
-    detailedScope: [
-      'Order picking batch release and verification',
-      'Stretch wrapping, strapping, and pallet integrity validation',
-      'Carrier handover, manifest signing, and bill of lading (BOL) filing',
-      'On-time dispatch SLA enforcement'
-    ],
-    image: IMAGES.sea,
-    metrics: '100% On-Time Dispatch'
-  },
-  {
-    id: 'safety-compliance',
-    title: 'SAFETY COMPLIANCE',
-    shortDesc: 'Zero-incident safety culture, OSHA standards, PPE enforcement, and hazardous cargo protocols.',
-    detailedScope: [
-      'Mandatory PPE auditing for warehouse personnel and visiting drivers',
-      'LPG and pressurized vessel safety handling protocols (PESO compliant)',
-      'Spill response, fire extinguisher inspection, and emergency evacuation drills',
-      'Daily 5S workplace discipline and aisle clearance enforcement'
-    ],
-    image: IMAGES.safetyDepot,
-    metrics: 'Zero Lost-Time Incidents'
-  },
-  {
-    id: 'manpower-management',
-    title: 'MANPOWER MANAGEMENT',
-    shortDesc: 'Shift allocation, cross-functional dock team leadership, and performance coaching.',
-    detailedScope: [
-      'Supervision of warehouse staff, loaders, and forklift operators',
-      'Daily pre-shift operational briefing and task prioritization',
-      'Cross-training operators on receiving, picking, and staging functions',
-      'Attendance tracking, shift handover logs, and safety toolbox talks'
-    ],
-    image: IMAGES.forklift,
-    metrics: '25+ Team Size Supervised'
-  },
-  {
-    id: 'stock-reconciliation',
-    title: 'STOCK RECONCILIATION',
-    shortDesc: 'ERP-to-floor physical inventory synchronization, variance analysis, and audit trails.',
-    detailedScope: [
-      'Monthly full physical audits and weekly high-value cycle checks',
-      'Investigation and adjustment documentation for inventory variances',
-      'Expiry date tracking and aging stock alerts',
-      'Coordination with internal audit and finance teams'
-    ],
-    image: IMAGES.hero,
-    metrics: '0.02% Variance Threshold'
-  },
-  {
-    id: 'distribution',
-    title: 'DISTRIBUTION',
-    shortDesc: 'Hub-and-spoke distribution, vehicle cube-utilization, and multi-drop delivery routing.',
-    detailedScope: [
-      'Truck load sequencing based on delivery routes and weight distribution',
-      'Transporter coordination and freight rate adherence',
-      'Proof of Delivery (POD) tracking and turnaround optimization',
-      'Reverse logistics and return goods handling'
-    ],
-    image: IMAGES.air,
-    metrics: 'Multi-Region Fleet Staging'
+// ---------- image paths ----------
+const BASE: string = (import.meta as any).env?.BASE_URL || '/';
+
+/** Turns a stored image path ("images/x.jpg", "uploads/x.webp", "/old-base/images/x.jpg", https://…) into a URL that works on any host. */
+export const asset = (p?: string): string => {
+  if (!p) return '';
+  if (/^(https?:|data:|blob:)/i.test(p)) return p;
+  const m = p.match(/(?:^|\/)((?:images|uploads)\/[^?#]+)/);
+  return BASE + (m ? m[1] : p.replace(/^\/+/, ''));
+};
+
+/** Inverse of asset(): the short relative path to store in the content ("uploads/123.webp"). */
+export const relPath = (url?: string): string => {
+  if (!url) return '';
+  if (/^(data:|blob:)/i.test(url)) return url;
+  const m = String(url).match(/(?:^|\/)((?:images|uploads)\/[^?#]+)/);
+  return m ? m[1] : url;
+};
+
+// ---------- normalising ----------
+const isObj = (x: any) => !!x && typeof x === 'object' && !Array.isArray(x);
+
+/** Fills every missing key from `def`; arrays and primitives from `raw` win when present. */
+function merge<T>(def: T, raw: any): T {
+  if (Array.isArray(def)) return (Array.isArray(raw) ? raw : def) as any;
+  if (isObj(def)) {
+    const src = isObj(raw) ? raw : {};
+    const out: any = { ...src };
+    for (const k of Object.keys(def as any)) out[k] = merge((def as any)[k], src[k]);
+    return out;
   }
-];
+  return (raw === undefined || raw === null ? def : raw) as T;
+}
 
-export const EXPERIENCES: ExperienceItem[] = [
-  {
-    id: 'lulu',
-    company: 'LULU INTERNATIONAL CENTRAL WAREHOUSE',
-    role: 'Warehouse Supervisor',
-    location: 'Trivandrum, Kerala',
-    period: '2025 – Present',
-    isCurrent: true,
-    responsibilities: [
-      'Daily warehouse supervision and dock operations leadership',
-      'Rigorous FIFO / FEFO compliance across high-volume FMCG and retail goods',
-      'Inbound and outbound coordination across multi-temperature storage zones',
-      'Goods receiving, quality verification, and rapid departure dispatch',
-      'Direct manpower management and operational shift allocation',
-      'Continuous inventory monitoring and cycle-count audits',
-      'Storage-space optimisation and vertical pallet density maximization'
-    ],
-    image: IMAGES.forklift,
-    tags: ['CENTRAL DISTRIBUTION HUB', 'RETAIL LOGISTICS', 'HIGH DENSITY STORAGE', 'FIFO / FEFO']
-  },
-  {
-    id: 'prabhath',
-    company: 'PRABHATH WAREHOUSE',
-    role: 'Warehouse In-Charge',
-    location: 'Kollam, Kerala',
-    period: '2024 – 2025',
-    progression: 'Intern → Warehouse In-Charge',
-    responsibilities: [
-      'End-to-end shipment coordination and multi-carrier dispatch scheduling',
-      'Physical stock movement supervision and floor slotting efficiency',
-      'Real-time inventory updates and ERP data integrity maintenance',
-      'Comprehensive documentation including invoices, delivery challans, and gate passes',
-      'Full warehouse operations management across receiving, storage, and customer dispatches'
-    ],
-    image: IMAGES.hero,
-    tags: ['RAPID PROMOTION', 'OPERATIONS MANAGEMENT', 'STOCK MOVEMENT', 'DOCUMENTATION']
-  },
-  {
-    id: 'bharat-gas',
-    company: 'BHARAT GAS',
-    role: 'Warehouse In-Charge',
-    location: 'Kollam, Kerala',
-    period: '2025',
-    isSafetyCritical: true,
-    responsibilities: [
-      'High-risk LPG storage operations and pressurized cylinder yard supervision',
-      'Bulk cylinder dispatch staging and route vehicle turnaround control',
-      'Stringent Safety SOP compliance under PESO and petroleum safety guidelines',
-      'Daily 100% inventory reconciliation for filled, empty, and defective cylinders',
-      'Loading and unloading monitoring with spark-proof handling guidelines',
-      'Ground staff supervision and safety protective equipment enforcement',
-      'Regulatory dispatch documentation, statutory registers, and transit safety compliance'
-    ],
-    image: IMAGES.safetyDepot,
-    tags: ['SAFETY-CRITICAL OPERATIONS', 'HAZARDOUS CARGO', 'LPG DISPATCH', 'SOP COMPLIANCE']
-  }
-];
+const arr = <T,>(v: any, def: T[]): T[] => (Array.isArray(v) ? v : def);
+const list = (v: any): any[] => (Array.isArray(v) ? v : []);
+const objs = (v: any, def: any[]): any[] => arr<any>(v, def).filter((x) => x && typeof x === 'object');
 
-export const FLOW_STEPS: FlowStep[] = [
-  {
-    step: 1,
-    name: 'RECEIVING',
-    subtitle: 'Dock Gate & Inflow Staging',
-    sop: 'Inspect carrier security seals, check freight against delivery challans, log arrival timestamp, and assign designated unloading bay.',
-    keyAction: 'Physical vehicle check & seal verification',
-    supervisorCheckpoint: 'Seal integrity sign-off and PO match verification'
-  },
-  {
-    step: 2,
-    name: 'INSPECTION',
-    subtitle: 'Quality & Barcode Validation',
-    sop: 'Conduct carton integrity assessment, verify SKU barcodes against packing lists, isolate damaged or defective items in quarantine zone.',
-    keyAction: 'Sampling, SKU scanning & condition check',
-    supervisorCheckpoint: 'Discrepancy reporting & damage logging'
-  },
-  {
-    step: 3,
-    name: 'STORAGE',
-    subtitle: 'Put-Away & Rack Placement',
-    sop: 'Transfer verified pallets to designated vertical storage bins according to velocity classification (fast/slow movers) and load ratings.',
-    keyAction: 'Pallet racking & bin assignment',
-    supervisorCheckpoint: 'Storage density & aisle clearance verification'
-  },
-  {
-    step: 4,
-    name: 'INVENTORY',
-    subtitle: 'FIFO / FEFO & Cycle Counts',
-    sop: 'Record bin locations into system, rotate stock to enforce First-In-First-Out / First-Expired-First-Out, and execute daily cycle checks.',
-    keyAction: 'Stock audit & expiry tracking',
-    supervisorCheckpoint: 'Perpetual stock register variance reconciliation'
-  },
-  {
-    step: 5,
-    name: 'PICKING',
-    subtitle: 'Wave & Batch Consolidation',
-    sop: 'Generate pick waves from dispatch orders, pick items with RF scanner confirmation, consolidate at marshaling area for order packaging.',
-    keyAction: 'Pick-path execution & order grouping',
-    supervisorCheckpoint: 'Pick accuracy check before protective pallet wrapping'
-  },
-  {
-    step: 6,
-    name: 'LOADING',
-    subtitle: 'Weight & Axle Optimization',
-    sop: 'Stage pallets by reverse drop order, load transport vehicles respecting axle weight limits, and secure freight with strapping/dunnage.',
-    keyAction: 'Safe dock loading & cube utilization',
-    supervisorCheckpoint: 'Vehicle weight balance & cargo tie-down approval'
-  },
-  {
-    step: 7,
-    name: 'DISPATCH',
-    subtitle: 'Outbound Release & Departure',
-    sop: 'Issue signed Outbound Gate Pass, verify driver credentials, hand over Invoices & E-Way bills, and stamp vehicle departure log.',
-    keyAction: 'Final paperwork handover & gate clearance',
-    supervisorCheckpoint: 'Final seal application & dispatch system update'
-  }
-];
+export function normalizeContent(raw: any): Content {
+  const r = isObj(raw) ? raw : {};
+  const b: any = bundled;
 
-export const SKILL_CATEGORIES = [
-  {
-    category: 'SYSTEMS & DOCUMENTATION',
-    skills: [
-      { name: 'SAP ERP', level: 'Core Operational' },
-      { name: 'Inventory Control', level: 'Advanced' },
-      { name: 'MS Excel (VLOOKUP, Pivot, Trackers)', level: 'Proficient' },
-      { name: 'Dispatch Documentation (E-Way, Gate Pass, BOL)', level: 'Specialist' },
-    ]
-  },
-  {
-    category: 'WAREHOUSE & INVENTORY STRATEGY',
-    skills: [
-      { name: 'Warehouse Operations', level: 'Supervisory' },
-      { name: 'Inbound Logistics', level: 'Advanced' },
-      { name: 'Outbound Logistics', level: 'Advanced' },
-      { name: 'Goods Receiving & Inspection', level: 'Standard SOP' },
-      { name: 'FIFO / FEFO Methodology', level: 'Strict Compliance' },
-      { name: 'Stock Reconciliation & Variance Control', level: 'Audit Grade' },
-    ]
-  },
-  {
-    category: 'LOGISTICS & TRANSPORTATION',
-    skills: [
-      { name: 'Vendor Coordination', level: 'Daily Interface' },
-      { name: 'Transport Coordination & Fleet Staging', level: 'Route Planning' },
-      { name: 'Dock Scheduling & Throughput Management', level: 'High-Density' },
-      { name: 'Dangerous Goods / LPG Safety Protocols', level: 'Certified SOP' },
-    ]
-  },
-  {
-    category: 'OPERATIONAL LEADERSHIP',
-    skills: [
-      { name: 'Team Supervision & Manpower Allocation', level: 'Proven Leader' },
-      { name: 'Critical Thinking & Crisis Handling', level: 'Real-time' },
-      { name: 'Multitasking Under High Pressure', level: 'Fast-paced Docks' },
-      { name: '5S & Workplace Safety Enforcement', level: 'Zero Tolerance' },
-    ]
-  }
-];
+  const SECTIONS: SectionConfig[] = list(r.SECTIONS)
+    .filter((s) => s && typeof s.id === 'string')
+    .map((s) => ({ id: s.id, visible: s.visible !== false, nav: typeof s.nav === 'string' ? s.nav : '' }));
+  for (const d of DEFAULT_SECTIONS) if (!SECTIONS.some((s) => s.id === d.id)) SECTIONS.push({ ...d });
 
-export const EDUCATION: EducationItem[] = [
-  {
-    degree: 'Bachelor of Business Administration (BBA)',
-    period: '2025 – Present',
-    institution: 'Manonmaniam Sundaranar University',
-    highlight: 'Specialization in Operational Management & Business Administration'
-  },
-  {
-    degree: 'PG Diploma in Logistics & Supply Chain Management',
-    period: '2024 – 2025',
-    institution: 'KAMS Education',
-    highlight: 'Advanced Supply Chain Strategy, Multimodal Freight, and Warehouse Layout Engineering'
-  },
-  {
-    degree: 'Certificate in Food & Beverage Services',
-    period: '2022',
-    institution: 'ITM Hotel Management School',
-    highlight: 'Service Hygiene, Food Handling Standards, and Quality Controls'
-  },
-  {
-    degree: 'Higher Secondary Examination (HSE)',
-    period: '2021',
-    institution: 'Kerala State Board',
-    score: '74%',
-    highlight: 'Commerce & Business Studies'
-  },
-  {
-    degree: 'Secondary School Leaving Certificate (SSLC)',
-    period: '2019',
-    institution: 'Kerala State Board',
-    score: '89%',
-    highlight: 'High Distinction Academic Standing'
-  }
-];
+  return {
+    PERSONAL_INFO: merge(b.PERSONAL_INFO as PersonalInfo, r.PERSONAL_INFO),
+    PROFILE_TAGS: arr<string>(r.PROFILE_TAGS, b.PROFILE_TAGS).map(String),
+    IMAGES: merge(b.IMAGES as Record<string, string>, r.IMAGES),
+    CAPABILITIES_BOARD: objs(r.CAPABILITIES_BOARD, b.CAPABILITIES_BOARD).map((c) => ({ ...c, detailedScope: list(c.detailedScope) })),
+    EXPERIENCES: objs(r.EXPERIENCES, b.EXPERIENCES).map((e) => ({ ...e, responsibilities: list(e.responsibilities), tags: list(e.tags) })),
+    FLOW_STEPS: objs(r.FLOW_STEPS, b.FLOW_STEPS).map((s, i) => ({ ...s, step: i + 1 })),
+    SKILL_GRID: objs(r.SKILL_GRID, DEFAULT_SKILL_GRID) as SkillTile[],
+    SKILL_CATEGORIES: objs(r.SKILL_CATEGORIES, b.SKILL_CATEGORIES).map((c) => ({ ...c, skills: list(c.skills) })),
+    EDUCATION: objs(r.EDUCATION, b.EDUCATION) as EducationItem[],
+    LEADERSHIP: objs(r.LEADERSHIP, b.LEADERSHIP).map((l) => ({ ...l, keywords: list(l.keywords) })),
+    LANGUAGES: objs(r.LANGUAGES, b.LANGUAGES) as LanguageItem[],
+    CAREER_TARGETS: arr<string>(r.CAREER_TARGETS, b.CAREER_TARGETS).map(String),
+    GALLERY_ITEMS: objs(r.GALLERY_ITEMS, b.GALLERY_ITEMS) as GalleryItem[],
+    SITE: merge(DEFAULT_SITE, r.SITE),
+    SECTIONS,
+    THEME: normalizeTheme(r.THEME),
+  };
+}
 
-export const LEADERSHIP: LeadershipItem[] = [
-  {
-    title: 'BOXING',
-    award: 'State Level Prize Holder',
-    category: 'Athletics',
-    keywords: ['Focus', 'Endurance', 'Discipline'],
-    description: 'Developed lightning situational assessment, physical stamina for grueling 12-hour high-tempo dock shifts, and the psychological tenacity required to overcome high-pressure logistics bottlenecks.'
-  },
-  {
-    title: 'KARATE',
-    award: 'Black Belt — SHO-DAN',
-    category: 'Martial Arts',
-    keywords: ['Control', 'Consistency', 'Composure'],
-    description: 'Black belt mastery instilling unyielding composure, meticulous respect for hierarchy and standard operating procedures, and unwavering attention to minute physical details.'
-  },
-  {
-    title: 'NCC (National Cadet Corps)',
-    award: 'Corporal · A Certificate Holder',
-    category: 'Cadet Corps',
-    keywords: ['Leadership', 'Teamwork', 'Responsibility', 'Discipline'],
-    description: 'Trained under military drill instructors in chain-of-command execution, tactical squad leadership, crisis safety response, and taking absolute accountability for personnel and mission outcomes.'
-  }
-];
+/** The content bundled into the build (used until/unless fresher content is fetched). */
+export const defaultContent = (): Content => normalizeContent(bundled);
 
-export const LANGUAGES = [
-  { name: 'ENGLISH', proficiency: 'Fluent', desc: 'Professional workplace & technical documentation' },
-  { name: 'MALAYALAM', proficiency: 'Native', desc: 'Native fluency & regional crew leadership' },
-  { name: 'TAMIL', proficiency: 'Intermediate', desc: 'Interstate transport driver coordination' },
-  { name: 'HINDI', proficiency: 'Basic', desc: 'Ground crew & national hauler communication' },
-];
+// ---------- live content (module-level bindings, updated by setContent) ----------
+const init = defaultContent();
+export let PERSONAL_INFO = init.PERSONAL_INFO;
+export let PROFILE_TAGS = init.PROFILE_TAGS;
+export let IMAGES = init.IMAGES;
+export let CAPABILITIES_BOARD = init.CAPABILITIES_BOARD;
+export let EXPERIENCES = init.EXPERIENCES;
+export let FLOW_STEPS = init.FLOW_STEPS;
+export let SKILL_GRID = init.SKILL_GRID;
+export let SKILL_CATEGORIES = init.SKILL_CATEGORIES;
+export let EDUCATION = init.EDUCATION;
+export let LEADERSHIP = init.LEADERSHIP;
+export let LANGUAGES = init.LANGUAGES;
+export let CAREER_TARGETS = init.CAREER_TARGETS;
+export let GALLERY_ITEMS = init.GALLERY_ITEMS;
+export let SITE = init.SITE;
+export let SECTIONS = init.SECTIONS;
+export let THEME = init.THEME;
+export { DEFAULT_THEME };
 
-export const CAREER_TARGETS = [
-  'Cargo Team Leader',
-  'Terminal Team Leader',
-  'Warehouse Supervisor',
-  'Logistics Operations',
-  'Supply Chain Operations'
-];
+let version = 0;
+const listeners = new Set<() => void>();
+export const subscribe = (fn: () => void) => { listeners.add(fn); return () => { listeners.delete(fn); }; };
+export const getVersion = () => version;
 
-export const GALLERY_ITEMS: GalleryItem[] = [
-  {
-    id: 'g-hero-wh',
-    title: 'Automated High-Bay Storage Aisles',
-    category: 'WAREHOUSE',
-    image: IMAGES.hero,
-    span: 'col-span-1 md:col-span-2 row-span-2',
-    caption: 'High-density multi-tier pallet storage with dedicated fork travel corridors.'
-  },
-  {
-    id: 'g-sea-freight',
-    title: 'Maritime Inbound Freight Vessels',
-    category: 'CARGO',
-    image: IMAGES.sea,
-    span: 'col-span-1 row-span-1 md:row-span-2',
-    caption: 'Intermodal container transshipment connecting global manufacturers to regional distribution hubs.'
-  },
-  {
-    id: 'g-land-fleet',
-    title: 'Cross-Dock Fleet Staging Bay',
-    category: 'DISTRIBUTION',
-    image: IMAGES.land,
-    span: 'col-span-1 md:col-span-2 row-span-1',
-    caption: 'Heavy logistics transport fleet synchronizing arrival and departure turnarounds.'
-  },
-  {
-    id: 'g-forklift-ops',
-    title: 'Vertical Precision Pallet Placement',
-    category: 'INVENTORY',
-    image: IMAGES.forklift,
-    span: 'col-span-1 row-span-1',
-    caption: 'Electric forklift maneuver in high-bay racking under strict safety protocols.'
-  },
-  {
-    id: 'g-safety-depot',
-    title: 'Hazardous LPG Storage Yard',
-    category: 'DISPATCH',
-    image: IMAGES.safetyDepot,
-    span: 'col-span-1 row-span-1',
-    caption: 'Explosion-proof staging and cylinder reconciliation yard with strict PESO guidelines.'
-  },
-  {
-    id: 'g-air-freight',
-    title: 'Express Air Freight Terminal Handover',
-    category: 'TERMINAL',
-    image: IMAGES.air,
-    span: 'col-span-1 md:col-span-2 row-span-1',
-    caption: 'Time-critical air cargo pallets staged for freighter tarmac loading.'
-  }
-];
-
-// ---- CMS bridge: live data is overwritten in place from /api/content before first render ----
-export const CONTENT_KEYS = ['PERSONAL_INFO','PROFILE_TAGS','IMAGES','CAPABILITIES_BOARD','EXPERIENCES','FLOW_STEPS','SKILL_CATEGORIES','EDUCATION','LEADERSHIP','LANGUAGES','CAREER_TARGETS','GALLERY_ITEMS'] as const;
-const live: Record<string, any> = { PERSONAL_INFO, PROFILE_TAGS, IMAGES, CAPABILITIES_BOARD, EXPERIENCES, FLOW_STEPS, SKILL_CATEGORIES, EDUCATION, LEADERSHIP, LANGUAGES, CAREER_TARGETS, GALLERY_ITEMS };
-export function applyContent(c: Record<string, any>) {
-  for (const k of CONTENT_KEYS) {
-    if (c?.[k] == null) continue;
-    if (Array.isArray(live[k])) live[k].splice(0, live[k].length, ...c[k]);
-    else Object.assign(live[k], c[k]);
-  }
+/** Replaces the live content, re-applies the theme and notifies React (useContentVersion). */
+export function setContent(raw: any) {
+  const c = normalizeContent(raw);
+  PERSONAL_INFO = c.PERSONAL_INFO; PROFILE_TAGS = c.PROFILE_TAGS; IMAGES = c.IMAGES; CAPABILITIES_BOARD = c.CAPABILITIES_BOARD;
+  EXPERIENCES = c.EXPERIENCES; FLOW_STEPS = c.FLOW_STEPS; SKILL_GRID = c.SKILL_GRID; SKILL_CATEGORIES = c.SKILL_CATEGORIES;
+  EDUCATION = c.EDUCATION; LEADERSHIP = c.LEADERSHIP; LANGUAGES = c.LANGUAGES; CAREER_TARGETS = c.CAREER_TARGETS;
+  GALLERY_ITEMS = c.GALLERY_ITEMS; SITE = c.SITE; SECTIONS = c.SECTIONS; THEME = c.THEME;
+  applyTheme(THEME);
+  version++;
+  listeners.forEach((f) => f());
 }
