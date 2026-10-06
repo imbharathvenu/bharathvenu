@@ -79,3 +79,12 @@ export async function deleteFile(path: string, message: string) {
 }
 
 export const CONTENT_PATH = 'public/content.json';
+
+// Allow the GitHub Pages admin to call these functions (auth is a Bearer token header, no cookies).
+export const cors = (req: any, res: any): boolean => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
+  if (req.method === 'OPTIONS') { res.status(204).end(); return true; }
+  return false;
+};

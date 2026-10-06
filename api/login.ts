@@ -1,6 +1,7 @@
-import { passwordOk, signToken, readJson, configured } from './_lib';
+import { cors, passwordOk, signToken, readJson, configured } from './_lib.js';
 
 export default async function handler(req: any, res: any) {
+  if (cors(req, res)) return;
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   if (!configured()) return res.status(500).json({ error: 'Server not configured' });
   const body = readJson(req);

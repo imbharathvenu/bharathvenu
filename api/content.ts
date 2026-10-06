@@ -1,6 +1,7 @@
-import { isAuthed, readJson, getFile, putFile, CONTENT_PATH, configured } from './_lib';
+import { cors, isAuthed, readJson, getFile, putFile, CONTENT_PATH, configured } from './_lib.js';
 
 export default async function handler(req: any, res: any) {
+  if (cors(req, res)) return;
   try {
     if (req.method === 'GET') {
       // Public: the site reads its content from here. 404 => site uses bundled defaults.
